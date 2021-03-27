@@ -1,6 +1,6 @@
 <template>
-  <div id="app">
-    <router-view></router-view>
+  <div>
+    这个是登录页
   </div>
 </template>
 
