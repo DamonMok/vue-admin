@@ -73,8 +73,11 @@ export default {
         // 2.1用户名密码错误
         if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
 
-        //2.2
-        this.$message.success("登录成功！");
+        //2.2登录成功
+        // 2.2.1保存token
+        window.sessionStorage.setItem('token', res.data.token)
+        // 2.2.2跳转到home页面
+        this.$router.push({name: 'Home'})
       });
     },
     didClickedReset() {
