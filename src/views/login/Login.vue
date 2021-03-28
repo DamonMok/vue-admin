@@ -8,22 +8,16 @@
 
       <!-- 2.表单 -->
       <div>
-        <el-form ref="form" :model="form" class="login_form">
-          <el-form-item>
-            <el-input
-              v-model="form.username"
-              prefix-icon="iconfont icon-user"
-            ></el-input>
+        <el-form :model="loginForm" :rules="loginRules" class="login_form">
+          <el-form-item prop="username">
+            <el-input v-model="loginForm.username" prefix-icon="iconfont icon-user"></el-input>
           </el-form-item>
-          <el-form-item>
-            <el-input
-              v-model="form.password"
-              prefix-icon="iconfont icon-password"
-            ></el-input>
+          <el-form-item prop="password">
+            <el-input v-model="loginForm.password" prefix-icon="iconfont icon-password"></el-input>
           </el-form-item>
           <el-form-item class="btns">
-            <el-button type="primary">登录</el-button>
-            <el-button type="info">重置</el-button>
+            <el-button type="primary" @click="didClickedLogin">登录</el-button>
+            <el-button type="info" @click="didClickedReset">重置</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -35,11 +29,29 @@
 export default {
   data() {
     return {
-      form: {
+      loginForm: {
         username: "",
         password: "",
       },
+      loginRules: {
+        username: [
+          { required: true, message: "请输入用户名", trigger: "blur" },
+          { min: 3, max: 5, message: "长度在 3 到 10 个字符", trigger: "blur" },
+        ],
+        password: [
+          { required: true, message: "请输入密码", trigger: "blur" },
+          { min: 3, max: 5, message: "长度在 6 到 12 个字符", trigger: "blur" },
+        ],
+      },
     };
+  },
+  methods: {
+    didClickedLogin() {
+      console.log("login");
+    },
+    didClickedReset() {
+      console.log("reset");
+    },
   },
 };
 </script>
