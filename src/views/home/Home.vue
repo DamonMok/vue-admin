@@ -1,10 +1,18 @@
 <template>
   <el-container class="home-container">
+    <!-- 头部区域 -->
     <el-header>
+      <div class="header-left">
+        <img src="~assets/img/damon.png" alt="">
+        <span>电商后台管理系统</span>
+      </div>
       <el-button type='info' @click="didClickedLogout">退出</el-button>
     </el-header>
+    <!-- 页面主题区域 -->
     <el-container>
+      <!-- 侧边栏 -->
       <el-aside width="200px">Aside</el-aside>
+      <!-- 右侧内容 -->
       <el-main>Main</el-main>
     </el-container>
   </el-container>
@@ -31,6 +39,25 @@ export default {
 
   .el-header {
     background-color: #3f4648;
+    display: flex;
+    justify-content: space-between;
+    font-size: 20px;
+    color: #fff;
+    padding: 0;
+
+    > div {
+      display: flex;
+      align-items: center;
+
+      img {
+        width: 80px;
+        height: 60px;
+      }
+
+      span {
+        margin-left: 15px;
+      }
+    }
   }
 
   .el-aside {
