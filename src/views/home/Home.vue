@@ -11,8 +11,10 @@
     <!-- 页面主题区域 -->
     <el-container>
       <!-- 侧边栏 -->
-      <el-aside width="200px">
-        <el-menu background-color="#3a3f4e" text-color="#fff" active-text-color="#409EFF" unique-opened>
+      <el-aside :width="isCollapse ? '64px' : '200px'">
+        <!-- 水平展开收起按钮 -->
+        <div class="toggle-button" @click="didClickedToggleButton">|||</div>
+        <el-menu background-color="#3a3f4e" text-color="#fff" active-text-color="#409EFF" unique-opened :collapse="isCollapse" :collapse-transition="false">
           <!-- 一级菜单 -->
           <el-submenu :index="menu.id+''" v-for="menu in menus" :key="menu.id">
             <template slot="title">
@@ -40,7 +42,10 @@ export default {
   data() {
     return {
       // 左侧数据菜单
-      menus: []
+      menus: [],
+
+      // 是否水平折叠菜单
+      isCollapse: false
     }
   },
   methods: {
@@ -59,6 +64,11 @@ export default {
       if (res.meta.status !== 200) return this.$message.error(res.meta.status)
 
       this.menus = res.data
+    },
+
+    // 菜单水平缩放
+    didClickedToggleButton() {
+      this.isCollapse = !this.isCollapse
     }
   },
   created () {
@@ -106,6 +116,16 @@ export default {
 
   .el-menu {
     border-right: 0;
+  }
+
+  .toggle-button {
+    font-size: 10px;
+    line-height: 24px;
+    background-color: #4a5064;
+    color: #fff;
+    text-align: center;
+    letter-spacing: 0.2em;
+    cursor: pointer;
   }
 
 </style>
