@@ -8,7 +8,7 @@
 
       <!-- 2.表单 -->
       <div>
-        <el-form :model="loginForm" :rules="loginRules" class="login_form">
+        <el-form ref="loginRef" :model="loginForm" :rules="loginRules" class="login_form">
           <el-form-item prop="username">
             <el-input v-model="loginForm.username" prefix-icon="iconfont icon-user"></el-input>
           </el-form-item>
@@ -26,6 +26,8 @@
 </template>
 
 <script>
+import { requestLogin } from "network/login.js";
+
 export default {
   data() {
     return {
@@ -36,18 +38,44 @@ export default {
       loginRules: {
         username: [
           { required: true, message: "请输入用户名", trigger: "blur" },
-          { min: 3, max: 5, message: "长度在 3 到 10 个字符", trigger: "blur" },
+          {
+            min: 3,
+            max: 10,
+            message: "长度在 3 到 10 个字符",
+            trigger: "blur",
+          },
         ],
         password: [
           { required: true, message: "请输入密码", trigger: "blur" },
-          { min: 3, max: 5, message: "长度在 6 到 12 个字符", trigger: "blur" },
+          {
+            min: 6,
+            max: 12,
+            message: "长度在 6 到 12 个字符",
+            trigger: "blur",
+          },
         ],
       },
     };
   },
   methods: {
     didClickedLogin() {
-      console.log("login");
+      this.$refs.loginRef.validate(async (valid) => {
+        // 1.表单验证失败
+        if (!valid) {
+          return this.$message("用户名或密码格式错误！");
+        }
+        // 2.表单验证成功后的操作
+        const { data: res } = await requestLogin(
+          this.loginForm.username,
+          this.loginForm.password
+        );
+
+        // 2.1用户名密码错误
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+
+        //2.2
+        this.$message.success("登录成功！");
+      });
     },
     didClickedReset() {
       console.log("reset");
