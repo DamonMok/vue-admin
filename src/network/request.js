@@ -8,5 +8,12 @@ export function request(method, config) {
     timeout: 5000
   })
 
+  // 请求拦截器
+  axiosRequest.interceptors.request.use(config => {
+    // 在发送请求之前为请求头拼接token
+    config.headers.Authorization = window.sessionStorage.getItem('token')
+    return config;
+  });
+
   return axiosRequest(config)
 }

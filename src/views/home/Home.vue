@@ -12,15 +12,17 @@
     <el-container>
       <!-- 侧边栏 -->
       <el-aside width="200px">
-        <el-menu background-color="#545c64" text-color="#fff" active-text-color="#ffd04b">
-          <el-submenu index="1">
+        <el-menu background-color="#3a3f4e" text-color="#fff" active-text-color="#409EFF" unique-opened>
+          <!-- 一级菜单 -->
+          <el-submenu :index="menu.id+''" v-for="menu in menus" :key="menu.id">
             <template slot="title">
-              <i class="el-icon-location"></i>
-              <span>导航一</span>
+              <i class="el-icon-film"></i>
+              <span>{{ menu.authName }}</span>
             </template>
-            <el-menu-item index="1-2">
-              <i class="el-icon-location"></i>
-              <span>导航一</span>
+            <!-- 二级菜单 -->
+            <el-menu-item :index="subMenu.id+''" v-for="subMenu in menu.children" :key="subMenu.id">
+              <i class="el-icon-menu"></i>
+              <span>{{ subMenu.authName }}</span>
             </el-menu-item>
           </el-submenu>
         </el-menu>
@@ -32,7 +34,15 @@
 </template>
 
 <script>
+import {requestMenus} from 'network/home'
+
 export default {
+  data() {
+    return {
+      // 左侧数据菜单
+      menus: []
+    }
+  },
   methods: {
     // 退出登录
     didClickedLogout() {
@@ -41,44 +51,61 @@ export default {
       // 跳转到登录页
       this.$router.push({ name: "Login" });
     },
+
+    // 获取左侧菜单数据
+    async getMenus() {
+      const {data:res} = await requestMenus()
+
+      if (res.meta.status !== 200) return this.$message.error(res.meta.status)
+
+      this.menus = res.data
+    }
+  },
+  created () {
+    this.getMenus()
   },
 };
 </script>
 
 <style lang="less" scoped>
-.home-container {
-  height: 100%;
-}
+  .home-container {
+    height: 100%;
+  }
 
-.el-header {
-  background-color: #3f4648;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 20px;
-  color: #fff;
-  padding: 0;
-
-  > div {
+  .el-header {
+    background-color: #3f4648;
     display: flex;
+    justify-content: space-between;
     align-items: center;
+    font-size: 20px;
+    color: #fff;
+    padding: 0;
 
-    img {
-      width: 80px;
-      height: 60px;
-    }
+    > div {
+      display: flex;
+      align-items: center;
 
-    span {
-      margin-left: 15px;
+      img {
+        width: 80px;
+        height: 60px;
+      }
+
+      span {
+        margin-left: 15px;
+      }
     }
   }
-}
 
-.el-aside {
-  background-color: #3a3f4d;
-}
+  .el-aside {
+    background-color: #3a3f4d;
+  }
 
-.el-main {
-  background-color: #ecf0f2;
-}
+  .el-main {
+    background-color: #ecf0f2;
+  }
+
+  .el-menu {
+    border-right: 0;
+  }
+
 </style>
