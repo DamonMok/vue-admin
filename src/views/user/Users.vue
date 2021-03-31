@@ -8,8 +8,8 @@
       <!-- 搜索框部分 -->
       <el-row :gutter="20" class="search-bar">
         <el-col :span="8">
-          <el-input placeholder="请输入内容" class="input-with-select">
-            <el-button slot="append" icon="el-icon-search"></el-button>
+          <el-input v-model="queryInfo.query" placeholder="请输入内容" class="input-with-select" clearable @clear="getUsers" @change="getUsers">
+            <el-button slot="append" icon="el-icon-search" @click="getUsers"></el-button>
           </el-input>
         </el-col>
         <el-col :span="4">
@@ -78,11 +78,11 @@ export default {
   },
   methods: {
     // 获取用户信息
-    async getUsers(queryInfo) {
-      const { data: res } = await requestUsers(queryInfo);
+    async getUsers() {
+      const { data: res } = await requestUsers(this.queryInfo);
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
 
-      console.log(res);
+      // console.log(res);
 
       this.users = res.data.users;
       this.total = res.data.total
@@ -92,13 +92,13 @@ export default {
     handleSizeChange(pageSize) {
       this.queryInfo.pagenum = 1
       this.queryInfo.pagesize = pageSize
-      this.getUsers(this.queryInfo)
+      this.getUsers()
     },
 
     // 页数改变
     handleCurrentChange(currentPage) {
       this.queryInfo.pagenum = currentPage
-      this.getUsers(this.queryInfo)
+      this.getUsers()
     },
 
     // 用户状态改变
@@ -111,6 +111,11 @@ export default {
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
 
       this.$message.success(res.meta.msg)
+    },
+
+    // 搜索
+    didClickedSearch() {
+      this.getUsers()
     }
   },
   created() {
