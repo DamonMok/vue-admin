@@ -26,7 +26,7 @@
         <el-table-column prop="role_name" label="角色"></el-table-column>
         <el-table-column prop="mg_state" label="状态">
           <template #default="scope">
-            <el-switch v-model="scope.row.mg_state">
+            <el-switch v-model="scope.row.mg_state" @change="didChangedState(scope.row)">
             </el-switch>
           </template>
         </el-table-column>
@@ -58,7 +58,7 @@
 import NavTitles from "components/content/NavTitles";
 import MyCard from "components/content/MyCard";
 
-import { requestUsers } from "network/user";
+import { requestUsers, requestChangeState } from "network/user";
 
 export default {
   data() {
@@ -99,6 +99,18 @@ export default {
     handleCurrentChange(currentPage) {
       this.queryInfo.pagenum = currentPage
       this.getUsers(this.queryInfo)
+    },
+
+    // 用户状态改变
+    async didChangedState(userInfo) {
+
+      // 关闭当前所有消息弹框
+      this.$message.closeAll()
+
+      const {data: res} = await requestChangeState(userInfo.id, userInfo.mg_state)
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+
+      this.$message.success(res.meta.msg)
     }
   },
   created() {
@@ -110,5 +122,9 @@ export default {
 <style lang="less" scoped>
   .search-bar {
     margin-bottom: 15px;
+  }
+
+  .el-pagination {
+    margin-top: 15px;
   }
 </style>
