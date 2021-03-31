@@ -6,7 +6,7 @@
     <!-- 卡片区域 -->
     <my-card>
       <!-- 搜索框部分 -->
-      <el-row :gutter="20">
+      <el-row :gutter="20" class="search-bar">
         <el-col :span="8">
           <el-input placeholder="请输入内容" class="input-with-select">
             <el-button slot="append" icon="el-icon-search"></el-button>
@@ -17,23 +17,72 @@
         </el-col>
       </el-row>
 
+      <!-- 用户列表 -->
+      <el-table :data="users" border style="width: 100%">
+        <el-table-column type="index" label="#"></el-table-column>
+        <el-table-column prop="username" label="姓名"></el-table-column>
+        <el-table-column prop="email" label="邮箱"></el-table-column>
+        <el-table-column prop="mobile" label="电话"></el-table-column>
+        <el-table-column prop="role_name" label="角色"></el-table-column>
+        <el-table-column prop="mg_state" label="状态">
+          <template #default="scope">
+            <el-switch v-model="scope.row.mg_state">
+            </el-switch>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="180px">
+          <template #default="scope">
+            <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
+            <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+            <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
+          </template>
+        </el-table-column>
+      </el-table>
 
     </my-card>
   </div>
 </template>
 
 <script>
-  import NavTitles from 'components/content/NavTitles'
-  import MyCard from 'components/content/MyCard'
+import NavTitles from "components/content/NavTitles";
+import MyCard from "components/content/MyCard";
 
-  export default {
-    components: {
-      NavTitles,
-      MyCard
+import { requestUsers } from "network/user";
+
+export default {
+  data() {
+    return {
+      queryInfo: {
+        query: "", // 查询参数
+        pagenum: 1, // 当前页码
+        pagesize: 2, // 每页显示条数
+      },
+      users: [], // 当前用户列表
+    };
+  },
+  components: {
+    NavTitles,
+    MyCard,
+  },
+  methods: {
+    // 获取用户信息
+    async getUsers(queryInfo) {
+      const { data: res } = await requestUsers(queryInfo);
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+
+      console.log(res);
+
+      this.users = res.data.users;
     },
-  }
+  },
+  created() {
+    this.getUsers(this.queryInfo);
+  },
+};
 </script>
 
 <style lang="less" scoped>
-
+  .search-bar {
+    margin-bottom: 15px;
+  }
 </style>
