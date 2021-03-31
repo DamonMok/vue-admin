@@ -39,6 +39,17 @@
         </el-table-column>
       </el-table>
 
+      <!-- 分页 -->
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :page-sizes="[2, 4, 6, 10]"
+        :page-size="queryInfo.pagesize"
+        :current-page="queryInfo.pagenum"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total">
+      </el-pagination>
+
     </my-card>
   </div>
 </template>
@@ -57,7 +68,8 @@ export default {
         pagenum: 1, // 当前页码
         pagesize: 2, // 每页显示条数
       },
-      users: [], // 当前用户列表
+      users: [], // 用户列表数据
+      total:0,  // 总页数
     };
   },
   components: {
@@ -73,7 +85,21 @@ export default {
       console.log(res);
 
       this.users = res.data.users;
+      this.total = res.data.total
     },
+
+    // 每页条数
+    handleSizeChange(pageSize) {
+      this.queryInfo.pagenum = 1
+      this.queryInfo.pagesize = pageSize
+      this.getUsers(this.queryInfo)
+    },
+
+    // 页数改变
+    handleCurrentChange(currentPage) {
+      this.queryInfo.pagenum = currentPage
+      this.getUsers(this.queryInfo)
+    }
   },
   created() {
     this.getUsers(this.queryInfo);
