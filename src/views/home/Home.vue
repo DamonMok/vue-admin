@@ -14,7 +14,7 @@
       <el-aside :width="isCollapse ? '64px' : '200px'">
         <!-- 水平展开收起按钮 -->
         <div class="toggle-button" @click="didClickedToggleButton">|||</div>
-        <el-menu background-color="#3a3f4e" text-color="#fff" active-text-color="#409EFF" unique-opened :collapse="isCollapse" :collapse-transition="false" router>
+        <el-menu background-color="#3a3f4e" text-color="#fff" active-text-color="#409EFF" unique-opened :collapse="isCollapse" :collapse-transition="false" router :default-active="currentPath">
           <!-- 一级菜单 -->
           <el-submenu :index="menu.id+''" v-for="menu in menus" :key="menu.id">
             <template slot="title">
@@ -22,7 +22,7 @@
               <span>{{ menu.authName }}</span>
             </template>
             <!-- 二级菜单 -->
-            <el-menu-item :index=" '/' + subMenu.path+''" v-for="subMenu in menu.children" :key="subMenu.id">
+            <el-menu-item :index="'/' + subMenu.path" v-for="subMenu in menu.children" :key="subMenu.id" @click="didClickedSubmenu('/' + subMenu.path)">
               <i class="el-icon-menu"></i>
               <span>{{ subMenu.authName }}</span>
             </el-menu-item>
@@ -47,7 +47,10 @@ export default {
       menus: [],
 
       // 是否水平折叠菜单
-      isCollapse: false
+      isCollapse: false,
+
+      // 当前path
+      currentPath: ''
     }
   },
   methods: {
@@ -59,6 +62,17 @@ export default {
       this.$router.push({ name: "Login" });
     },
 
+    // 菜单水平缩放
+    didClickedToggleButton() {
+      this.isCollapse = !this.isCollapse
+    },
+
+    // 点击了二级菜单
+    didClickedSubmenu(path) {
+      window.sessionStorage.setItem('currentPath', path)
+      this.currentPath = path
+    },
+
     // 获取左侧菜单数据
     async getMenus() {
       const {data:res} = await requestMenus()
@@ -66,15 +80,13 @@ export default {
       if (res.meta.status !== 200) return this.$message.error(res.meta.status)
 
       this.menus = res.data
-    },
-
-    // 菜单水平缩放
-    didClickedToggleButton() {
-      this.isCollapse = !this.isCollapse
     }
+    
   },
   created () {
-    this.getMenus()
+    this.getMenus(),
+
+    this.currentPath = window.sessionStorage.getItem('currentPath')
   },
 };
 </script>
