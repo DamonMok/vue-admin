@@ -45,7 +45,7 @@
     </my-card>
 
     <!-- 添加用户 -->
-    <el-dialog title="提示" :visible.sync="dialogVisible" width="50%" :before-close="didClickedClose">
+    <el-dialog title="提示" :visible.sync="dialogVisible" :close-on-click-modal="false" width="50%" :before-close="didClickedClose">
       <el-form :model="addForm" :rules="addFormRules" ref="addForm" label-width="100px" class="demo-ruleForm">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="addForm.username"></el-input>
@@ -201,6 +201,7 @@ export default {
     // 关闭新增用户对话框
     didClickedClose() {
       this.dialogVisible = false
+      this.$refs.addForm.resetFields()
     },
   },
   created() {
