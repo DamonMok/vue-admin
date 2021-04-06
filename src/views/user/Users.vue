@@ -195,7 +195,10 @@ export default {
 
     // 新增用户确定提交
     didClickedSubmit() {
-      this.dialogVisible = false
+      // this.dialogVisible = false
+      this.$refs.addForm.validate((valid, objs) => {
+        if (!valid) return
+      })
     },
 
     // 关闭新增用户对话框
