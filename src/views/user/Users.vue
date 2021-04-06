@@ -35,7 +35,7 @@
             <!-- 编辑 -->
             <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditUserDialog(scope.row)"></el-button>
             <!-- 删除 -->
-            <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+            <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteUserDialog(scope.row.id)"></el-button>
             <!-- 设置 -->
             <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
           </template>
@@ -76,7 +76,8 @@ import NavTitles from "components/content/NavTitles";
 import MyCard from "components/content/MyCard";
 
 import { requestUsers, requestChangeState, requestAddUser, 
-         requestUserById, requestUpdateUserInfo } from "network/user";
+         requestUserById, requestUpdateUserInfo, 
+         requestDeleteUser } from "network/user";
 
 export default {
   data() { 
@@ -232,14 +233,9 @@ export default {
     updateUserInfo() {
       const validList = ['email', 'mobile']
       this.$refs.addForm.validateField(validList, async (errmsg) => {
-        // if (!errmsg) {
-        //   // 使用部分表单验证时，会掉函数会调用多次
-        //   // 使用this.validCount记录是否已经全部验证完
-        //   this.validCount++
-        // } else {
-        //   this.validCount = 0
-        // }
-
+        
+        // 使用部分表单验证时，会掉函数会调用多次
+        // 使用this.validCount记录是否已经全部验证完
         this.validCount = !errmsg ? this.validCount+1 : 0
 
         // 验证不通过
@@ -271,6 +267,24 @@ export default {
       this.dialogVisible = false
       this.$refs.addForm.resetFields()
     },
+
+    // 删除用户确认框
+    async deleteUserDialog(id) {
+      const res = await this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).catch(error => error)
+
+      if (res == 'confirm') {
+        // 确认删除
+        const {data: res} = await requestDeleteUser(id)
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+
+        this.queryInfo.pagenum = 1
+        this.getUsers()
+      }
+    }
   },
   created() {
     this.getUsers(this.queryInfo);

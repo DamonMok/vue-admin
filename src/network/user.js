@@ -40,3 +40,10 @@ export function requestUpdateUserInfo(user) {
     }
   })
 }
+
+// 删除单个用户
+export function requestDeleteUser(id) {
+  return request('delete', {
+    url: 'users/' + id
+  })
+}
