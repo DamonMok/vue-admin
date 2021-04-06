@@ -13,7 +13,7 @@
           </el-input>
         </el-col>
         <el-col :span="4">
-          <el-button type="primary" @click="didClickedAddUser">添加用户</el-button>
+          <el-button type="primary" @click="showAddUserDialog">添加用户</el-button>
         </el-col>
       </el-row>
 
@@ -32,8 +32,11 @@
         </el-table-column>
         <el-table-column label="操作" width="180px">
           <template #default="scope">
-            <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
+            <!-- 编辑 -->
+            <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditUserDialog(scope.row)"></el-button>
+            <!-- 删除 -->
             <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+            <!-- 设置 -->
             <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
           </template>
         </el-table-column>
@@ -47,10 +50,10 @@
     <!-- 添加用户 -->
     <el-dialog title="提示" :visible.sync="dialogVisible" :close-on-click-modal="false" width="50%" :before-close="didClickedClose">
       <el-form :model="addForm" :rules="addFormRules" ref="addForm" label-width="100px" class="demo-ruleForm">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="addForm.username"></el-input>
+        <el-form-item label="用户名" :prop="isEditDialog ? '' : 'username'">
+          <el-input v-model="addForm.username" :disabled="isEditDialog"></el-input>
         </el-form-item>
-        <el-form-item label="密码" prop="password">
+        <el-form-item label="密码" prop="password" v-show="!isEditDialog">
           <el-input v-model="addForm.password"></el-input>
         </el-form-item>
         <el-form-item label="邮箱" prop="email">
@@ -72,10 +75,11 @@
 import NavTitles from "components/content/NavTitles";
 import MyCard from "components/content/MyCard";
 
-import { requestUsers, requestChangeState } from "network/user";
+import { requestUsers, requestChangeState, requestAddUser, 
+         requestUserById, requestUpdateUserInfo } from "network/user";
 
 export default {
-  data() {
+  data() { 
     // 验证邮箱自定义规则
     var checkEmail = (rule, value, cb) => {
       const regEmail = /^[A-Za-z0-9._%-]+@([A-Za-z0-9-]+.)+[A-Za-z]{2,4}$/
@@ -100,7 +104,9 @@ export default {
       },
       users: [], // 用户列表数据
       total: 0, // 总页数
-      dialogVisible: false, // 显示新增用户对话框
+      dialogVisible: false, // 显示新增/修改用户对话框
+      isEditDialog: false,  // 是否为编辑对话框
+      validCount: 0,  // 是否完成所有验证
 
       // 新增用户表单数据
       addForm: {
@@ -170,14 +176,11 @@ export default {
     },
 
     // 用户状态改变
-    async didChangedState(userInfo) {
+    async didChangedState(user) {
       // 关闭当前所有消息弹框
       this.$message.closeAll();
 
-      const { data: res } = await requestChangeState(
-        userInfo.id,
-        userInfo.mg_state
-      );
+      const { data: res } = await requestChangeState(user);
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
 
       this.$message.success(res.meta.msg);
@@ -188,17 +191,79 @@ export default {
       this.getUsers();
     },
 
-    // 新增用户按钮
-    didClickedAddUser() {
+    // 新增用户对话框
+    showAddUserDialog() {
+      this.isEditDialog = false
       this.dialogVisible = true;
     },
 
-    // 新增用户确定提交
-    didClickedSubmit() {
-      // this.dialogVisible = false
-      this.$refs.addForm.validate((valid, objs) => {
+    // 修改用户对话框
+    async showEditUserDialog(user) {
+      this.isEditDialog = true
+      this.dialogVisible = true
+
+      // 用户信息查询并渲染
+      const {data: res} = await requestUserById(user)
+      this.addForm.username = res.data.username
+      this.addForm.email = res.data.email
+      this.addForm.mobile = res.data.mobile
+      this.addForm.id = res.data.id
+    },
+
+    // 添加新用户
+    addUser() {
+      this.$refs.addForm.validate(async (valid, objs) => {
+
+        // 验证不通过
         if (!valid) return
+
+        const {data: res} = await requestAddUser(this.addForm)
+        // 添加失败
+        if (res.meta.status !== 201) return this.$message.error(res.meta.msg)
+
+        // 成功
+        this.getUsers()
+        this.$message.success(res.meta.msg)
+        this.dialogVisible = false
       })
+    },
+
+    // 修改用户信息
+    updateUserInfo() {
+      const validList = ['email', 'mobile']
+      this.$refs.addForm.validateField(validList, async (errmsg) => {
+        // if (!errmsg) {
+        //   // 使用部分表单验证时，会掉函数会调用多次
+        //   // 使用this.validCount记录是否已经全部验证完
+        //   this.validCount++
+        // } else {
+        //   this.validCount = 0
+        // }
+
+        this.validCount = !errmsg ? this.validCount+1 : 0
+
+        // 验证不通过
+        if (errmsg || this.validCount !== validList.length) return
+        
+        const {data: res} = await requestUpdateUserInfo(this.addForm)
+
+        // 修改失败
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+
+        // 成功
+        this.getUsers()
+        this.$message.success(res.meta.msg)
+        this.dialogVisible = false
+      })
+    },
+
+    // 新增/编辑用户确定提交
+    didClickedSubmit() {
+      if (!this.isEditDialog) {
+        this.addUser()
+      } else {
+        this.updateUserInfo()
+      }
     },
 
     // 关闭新增用户对话框
