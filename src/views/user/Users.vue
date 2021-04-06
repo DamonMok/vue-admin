@@ -50,13 +50,13 @@
         <el-form-item label="用户名" prop="username">
           <el-input v-model="addForm.username"></el-input>
         </el-form-item>
-        <el-form-item label="密码" prop="username">
+        <el-form-item label="密码" prop="password">
           <el-input v-model="addForm.password"></el-input>
         </el-form-item>
-        <el-form-item label="邮箱" prop="username">
+        <el-form-item label="邮箱" prop="email">
           <el-input v-model="addForm.email"></el-input>
         </el-form-item>
-        <el-form-item label="手机号" prop="username">
+        <el-form-item label="手机号" prop="mobile">
           <el-input v-model="addForm.mobile"></el-input>
         </el-form-item>
       </el-form>
@@ -76,6 +76,22 @@ import { requestUsers, requestChangeState } from "network/user";
 
 export default {
   data() {
+    // 验证邮箱自定义规则
+    var checkEmail = (rule, value, cb) => {
+      const regEmail = /^[A-Za-z0-9._%-]+@([A-Za-z0-9-]+.)+[A-Za-z]{2,4}$/
+      if (regEmail.test(value)) {
+        return cb()
+      }
+      cb(new Error('请输入合法的邮箱'))
+    }
+    // 验证手机自定义规则
+    var checkMobile = (rule, value, cb) => {
+      const regMobile = /^((13[0-9])|(14[5|7])|(15([0-3]|[5-9]))|(18[0,5-9]))\d{8}$/
+      if (regMobile.test(value)) {
+        return cb()
+      }
+      cb(new Error('请输入合法的手机号'))
+    }
     return {
       queryInfo: {
         query: "", // 查询参数
@@ -85,6 +101,7 @@ export default {
       users: [], // 用户列表数据
       total: 0, // 总页数
       dialogVisible: false, // 显示新增用户对话框
+
       // 新增用户表单数据
       addForm: {
         username: '',
@@ -114,9 +131,11 @@ export default {
         ],
         email: [
           { required: true, message: "请输入邮箱", trigger: "blur" },
+          { validator: checkEmail, trigger: "blur" },
         ],
         mobile: [
           { required: true, message: "请输入手机号", trigger: "blur" },
+          { validator: checkMobile, trigger: "blur" },
         ],
       }
     };
