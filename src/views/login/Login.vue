@@ -75,9 +75,9 @@ export default {
 
         //2.2登录成功
         // 2.2.1保存token
-        window.sessionStorage.setItem('token', res.data.token)
+        window.sessionStorage.setItem("token", res.data.token);
         // 2.2.2跳转到home页面
-        this.$router.push({name: 'Home'})
+        this.$router.push({ name: "Home" });
       });
     },
     didClickedReset() {
