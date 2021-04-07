@@ -7,6 +7,7 @@ const Login = () => import('views/login/Login')
 const Home = () => import('views/home/Home')
 const Welcome = () => import('views/home/Welcome')
 const Users = () => import('views/user/Users')
+const Rights = () => import('views/rights/Rights')
 
 const routes = [
   // 登录
@@ -23,7 +24,8 @@ const routes = [
     redirect: '/welcome',
     children: [
       {path: '/welcome', name: 'Welcome', component: Welcome},
-      {path: '/users', name: 'Users', component: Users}
+      {path: '/users', name: 'Users', component: Users},
+      {path: '/rights', name: 'Rights', component: Rights}
     ]
   },
   {
