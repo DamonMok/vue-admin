@@ -270,19 +270,26 @@ export default {
 
     // 删除用户确认框
     async deleteUserDialog(id) {
-      const res = await this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+      const confirmStr = await this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).catch(error => error)
-
-      if (res == 'confirm') {
+      
+      if (confirmStr == 'confirm') {
         // 确认删除
         const {data: res} = await requestDeleteUser(id)
         if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
 
         this.queryInfo.pagenum = 1
         this.getUsers()
+        this.$message.success(res.meta.msg)
+
+      } else if (confirmStr == 'cancel') {
+        this.$message.info("已取消删除") 
+        
+      } else {
+        return
       }
     }
   },
