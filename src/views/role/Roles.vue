@@ -48,18 +48,19 @@
         <el-table-column prop="roleName" label="角色名称"></el-table-column>
         <el-table-column prop="roleDesc" label="角色描述"></el-table-column>
         <el-table-column label="操作">
-          <template>
+          <template #default="scope">
             <el-button type="primary" size="mini">编辑</el-button>
             <el-button type="delete" size="mini">删除</el-button>
-            <el-button type="warning" size="mini" @click="showSetRightDialog">分配权限</el-button>
+            <el-button type="warning" size="mini" @click="showSetRightDialog(scope.row)">分配权限</el-button>
           </template>
         </el-table-column>
       </el-table>
     </my-card>
 
     <!-- 分配权限对话框 -->
-    <el-dialog title="分配权限" :visible.sync="setRightDialogVisible" width="50%">
-      <el-tree :data="rights" :props="defaultProps" @node-click="handleNodeClick" show-checkbox node-key="id" default-expand-all></el-tree>
+    <el-dialog title="分配权限" :visible.sync="setRightDialogVisible" width="50%" @close="closeDialog">
+      <!-- 权限树 -->
+      <el-tree :data="rights" :props="defaultProps" @node-click="handleNodeClick" show-checkbox node-key="id" default-expand-all :default-checked-keys="defaultNodes"></el-tree>
       <span slot="footer" class="dialog-footer">
         <el-button @click="setRightDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="setRightDialogVisible = false">确 定</el-button>
@@ -93,8 +94,10 @@ export default {
       defaultProps: {
         children: 'children',
         label: 'authName'
-      }
+      },
 
+      // 分配权限对话框中的默认选中节点
+      defaultNodes:[]
     };
   },
   methods: {
@@ -107,6 +110,7 @@ export default {
       this.roles = res.data;
     },
 
+    // 获取所有权限数据
     async getRights(type) {
       const {data: res} = await requestRights(type)
       // 获取失败
@@ -140,11 +144,33 @@ export default {
       }
     },
 
+    // 获取所有默认选中的节点
+    getDefaultNodes(node, array) {
+      if (!node.children) {
+        return array.push(node.id)
+      }
+
+      node.children.forEach(item => {
+        this.getDefaultNodes(item, array)
+      });
+    },
+
     // 分配权限
-    showSetRightDialog() {
+    showSetRightDialog(right) {
+      console.log(this.defaultNodes);
+      // 获取所有权限
+      this.getRights('tree')
+      
+      // 获取所有被选中的三级节点
+      this.getDefaultNodes(right, this.defaultNodes)
+
       // 显示分配权限对话框
       this.setRightDialogVisible = true
-      this.getRights('tree')
+    },
+
+    // 分配权限对话框关闭
+    closeDialog() {
+      this.defaultNodes = []
     },
 
     // 点击选择节点
