@@ -16,11 +16,11 @@
       <el-table :data="roles" border style="width: 100%">
         <!-- 展开行 -->
         <el-table-column type="expand">
-          <template #default="scoped">
-            <el-row  v-for="(item1, index) in scoped.row.children" :key="index" :class="{'bottom-border': true, 'top-border': index ===0, 'vcenter': true}">
+          <template #default="scope">
+            <el-row  v-for="(item1, index) in scope.row.children" :key="index" :class="{'bottom-border': true, 'top-border': index ===0, 'vcenter': true}">
               <!-- 一级权限 -->
               <el-col :span="5">
-                <el-tag>{{ item1.authName }}</el-tag>
+                <el-tag closable>{{ item1.authName }}</el-tag>
                 <i class="el-icon-caret-right"></i>
               </el-col>
 
@@ -29,12 +29,12 @@
                 <el-row v-for="(item2, index) in item1.children" :key="index" :class="{'top-border':index !==0, 'vcenter': true}">
                   <!-- 二级 -->
                   <el-col :span="6">
-                    <el-tag type="success">{{ item2.authName }}</el-tag>
+                    <el-tag type="success" closable>{{ item2.authName }}</el-tag>
                     <i class="el-icon-caret-right"></i>
                   </el-col>
                   <!-- 三级 -->
                   <el-col :span="18">
-                    <el-tag v-for="(item3, index) in item2.children" :key="index" type="warning">
+                    <el-tag v-for="(item3, index) in item2.children" :key="index" type="warning" closable @close="removeRightById(scope.row.id, item3.id)">
                       {{ item3.authName }}
                     </el-tag>
                   </el-col>
@@ -63,7 +63,7 @@
 import NavTitles from "components/content/NavTitles";
 import MyCard from "components/content/MyCard";
 
-import {requestRoles} from 'network/roles'
+import {requestRoles, requestRemoveRight} from 'network/roles'
 
 export default {
   components: {
@@ -77,12 +77,33 @@ export default {
     }
   },
   methods: {
+    // 获取角色列表
     async getRoles() {
       const {data: res} = await requestRoles()
 
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
 
       this.roles = res.data
+    },
+
+    // 删除权限
+    async removeRightById(roleId, rightId) {
+      // 弹框提示
+      const confirmResult = await this.$confirm('此操作将删除该权限, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).catch(err => err)
+      
+      if (confirmResult === 'confirm') {
+        const {data: res} = await requestRemoveRight(roleId, rightId)
+
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+
+        // 成功
+        this.$message.success('取消权限成功')
+        this.getRoles()
+      }
     }
   },
   created () {
