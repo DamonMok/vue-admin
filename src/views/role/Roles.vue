@@ -17,7 +17,7 @@
         <!-- 展开行 -->
         <el-table-column type="expand">
           <template #default="scope">
-            <el-row  v-for="(item1, index) in scope.row.children" :key="index" :class="{'bottom-border': true, 'top-border': index ===0, 'vcenter': true}">
+            <el-row v-for="(item1, index) in scope.row.children" :key="index" :class="{'bottom-border': true, 'top-border': index ===0, 'vcenter': true}">
               <!-- 一级权限 -->
               <el-col :span="5">
                 <el-tag closable @close="removeRightById(scope.row, item1.id)">{{ item1.authName }}</el-tag>
@@ -40,7 +40,7 @@
                   </el-col>
                 </el-row>
               </el-col>
-            </el-row> 
+            </el-row>
           </template>
         </el-table-column>
 
@@ -51,11 +51,20 @@
           <template>
             <el-button type="primary" size="mini">编辑</el-button>
             <el-button type="delete" size="mini">删除</el-button>
-            <el-button type="warning" size="mini">分配权限</el-button>
+            <el-button type="warning" size="mini" @click="showSetRightDialog">分配权限</el-button>
           </template>
         </el-table-column>
       </el-table>
     </my-card>
+
+    <!-- 分配权限对话框 -->
+    <el-dialog title="分配权限" :visible.sync="setRightDialogVisible" width="50%">
+      <el-tree :data="rights" :props="defaultProps" @node-click="handleNodeClick" show-checkbox node-key="id" default-expand-all></el-tree>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="setRightDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="setRightDialogVisible = false">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -63,7 +72,8 @@
 import NavTitles from "components/content/NavTitles";
 import MyCard from "components/content/MyCard";
 
-import {requestRoles, requestRemoveRight} from 'network/roles'
+import { requestRoles, requestRemoveRight } from "network/roles";
+import { requestRights } from "network/rights"
 
 export default {
   components: {
@@ -74,63 +84,99 @@ export default {
     return {
       // 角色列表数据
       roles: [],
-    }
+
+      // 分配权限对话框的显示/隐藏
+      setRightDialogVisible: false,
+
+      // 权限列表数据
+      rights: [],
+      defaultProps: {
+        children: 'children',
+        label: 'authName'
+      }
+
+    };
   },
   methods: {
     // 获取角色列表
     async getRoles() {
-      const {data: res} = await requestRoles()
+      const { data: res } = await requestRoles();
 
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+
+      this.roles = res.data;
+    },
+
+    async getRights(type) {
+      const {data: res} = await requestRights(type)
+      // 获取失败
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-
-      this.roles = res.data
+      
+      // 获取成功
+      this.rights = res.data
     },
 
     // 删除权限
     async removeRightById(role, rightId) {
       // 弹框提示
-      const confirmResult = await this.$confirm('此操作将删除该权限, 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).catch(err => err)
-      
-      if (confirmResult === 'confirm') {
-        const {data: res} = await requestRemoveRight(role.id, rightId)
+      const confirmResult = await this.$confirm(
+        "此操作将删除该权限, 是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      ).catch((err) => err);
 
-        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+      if (confirmResult === "confirm") {
+        const { data: res } = await requestRemoveRight(role.id, rightId);
+
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
 
         // 成功
-        this.$message.success('取消权限成功')
-        role.children = res.data
+        this.$message.success("取消权限成功");
+        role.children = res.data;
       }
+    },
+
+    // 分配权限
+    showSetRightDialog() {
+      // 显示分配权限对话框
+      this.setRightDialogVisible = true
+      this.getRights('tree')
+    },
+
+    // 点击选择节点
+    handleNodeClick() {
+      console.log(1);
     }
   },
-  created () {
-    this.getRoles()
+  created() {
+    this.getRoles();
   },
 };
 </script>
 
 <style lang="less" scoped>
-  .el-table {
-    margin-top: 15px;
-  }
+.el-table {
+  margin-top: 15px;
+}
 
-  .el-tag {
-    margin: 7px
-  }
+.el-tag {
+  margin: 7px;
+}
 
-  .vcenter {
-    display: flex;
-    align-items : center;
-  }
+.vcenter {
+  display: flex;
+  align-items: center;
+}
 
-  .top-border {
-    border-top: 1px solid #eee;
-  }
+.top-border {
+  border-top: 1px solid #eee;
+}
 
-  .bottom-border {
-    border-bottom: 1px solid #eee;
-  }
+.bottom-border {
+  border-bottom: 1px solid #eee;
+}
 </style>
