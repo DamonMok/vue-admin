@@ -13,3 +13,13 @@ export function requestRemoveRight(roleId, rightId) {
     url: `roles/${roleId}/rights/${rightId}`
   })
 }
+
+// 角色授权
+export function requestAllotRight(roleId, rids) {
+  return request('post', {
+    url: `roles/${roleId}/rights`,
+    data: {
+      rids
+    }
+  })
+}

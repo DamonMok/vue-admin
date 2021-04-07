@@ -60,10 +60,10 @@
     <!-- 分配权限对话框 -->
     <el-dialog title="分配权限" :visible.sync="setRightDialogVisible" width="50%" @close="closeDialog">
       <!-- 权限树 -->
-      <el-tree :data="rights" :props="defaultProps" @node-click="handleNodeClick" show-checkbox node-key="id" default-expand-all :default-checked-keys="defaultNodes"></el-tree>
+      <el-tree :data="rights" :props="defaultProps" @node-click="handleNodeClick" show-checkbox node-key="id" default-expand-all :default-checked-keys="defaultNodes" ref="tree"></el-tree>
       <span slot="footer" class="dialog-footer">
         <el-button @click="setRightDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="setRightDialogVisible = false">确 定</el-button>
+        <el-button type="primary" @click="allotRights">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -73,7 +73,7 @@
 import NavTitles from "components/content/NavTitles";
 import MyCard from "components/content/MyCard";
 
-import { requestRoles, requestRemoveRight } from "network/roles";
+import { requestRoles, requestRemoveRight, requestAllotRight } from "network/roles";
 import { requestRights } from "network/rights"
 
 export default {
@@ -97,7 +97,10 @@ export default {
       },
 
       // 分配权限对话框中的默认选中节点
-      defaultNodes:[]
+      defaultNodes:[],
+
+      // 当前分配权限的角色ID
+      roleId: 0
     };
   },
   methods: {
@@ -155,14 +158,15 @@ export default {
       });
     },
 
-    // 分配权限
-    showSetRightDialog(right) {
-      console.log(this.defaultNodes);
+    // 分配权限对话框
+    showSetRightDialog(role) {
+      this.roleId = role.id
+
       // 获取所有权限
       this.getRights('tree')
       
       // 获取所有被选中的三级节点
-      this.getDefaultNodes(right, this.defaultNodes)
+      this.getDefaultNodes(role, this.defaultNodes)
 
       // 显示分配权限对话框
       this.setRightDialogVisible = true
@@ -175,7 +179,25 @@ export default {
 
     // 点击选择节点
     handleNodeClick() {
-      console.log(1);
+      // console.log(1);
+    },
+
+    // 分配权限确定按钮
+    async allotRights() {
+      // 获取勾选的权限数组字符串
+      const rights = [...this.$refs.tree.getCheckedKeys(), ...this.$refs.tree.getHalfCheckedKeys()]
+      const rightStr = rights.join(',')
+
+      // 发送请求
+      const {data: res} = await requestAllotRight(this.roleId, rightStr)
+      // 失败
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+
+      // 成功
+      this.getRoles()
+      this.$message.success(res.meta.msg)
+      this.setRightDialogVisible = false
+      
     }
   },
   created() {
