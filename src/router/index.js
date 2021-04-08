@@ -9,6 +9,7 @@ const Welcome = () => import('views/home/Welcome')
 const Users = () => import('views/user/Users')
 const Rights = () => import('views/rights/Rights')
 const Roles = () => import('views/role/Roles')
+const Caterogy = () => import('views/goods/Category')
 
 const routes = [
   // 登录
@@ -27,7 +28,8 @@ const routes = [
       {path: '/welcome', name: 'Welcome', component: Welcome},
       {path: '/users', name: 'Users', component: Users},
       {path: '/rights', name: 'Rights', component: Rights},
-      {path: '/roles', name: 'Roles', component: Roles}
+      {path: '/roles', name: 'Roles', component: Roles},
+      {path: '/categories', name: 'Category', component: Caterogy}
     ]
   },
   {
