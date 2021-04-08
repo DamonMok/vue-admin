@@ -14,10 +14,21 @@
 
       <!-- 树形表格 -->
       <tree-table :data="categories" :columns="columns" :selection-type="false" :expand-type="false" show-index index-text="#" border :show-row-hover="false">
-        <!-- 是否有效模板 -->
+        <!-- 是否有效列自定义模板 -->
         <template #isOk="scope">
           <i class="el-icon-error" v-if="scope.row.cat_deleted" style="color: red"></i>
           <i class="el-icon-success" v-else style="color: lightgreen"></i>
+        </template>
+        <!-- 排序列自定义模板 -->
+        <template #level="scope">
+          <el-tag v-if="scope.row.cat_level === 0" size="mini">一级</el-tag>
+          <el-tag type="success" v-else-if="scope.row.cat_level === 1" size="mini">二级</el-tag>
+          <el-tag type="warning" v-else size="mini">三级</el-tag>
+        </template>
+        <!-- 操作列自定义模板 -->
+        <template #operation="scope">
+          <el-button type="primary" icon="el-icon-edit" size="mini">编辑</el-button>
+          <el-button type="danger" icon="el-icon-delete" size="mini">删除</el-button>
         </template>
       </tree-table>
     </my-card>
@@ -48,7 +59,11 @@ import {requestGoodsCategories} from 'network/goods'
           // 分类名称列
           {label: '分类名称', prop: 'cat_name'},
           // 是否有效列
-          {label: '是否有效', type: 'template', template: 'isOk'}
+          {label: '是否有效', type: 'template', template: 'isOk'},
+          // 排序列
+          {label: '排序', type: 'template', template: 'level'},
+          // 操作列
+          {label: '操作', type: 'template', template: 'operation'}
         ]
       }
     },
