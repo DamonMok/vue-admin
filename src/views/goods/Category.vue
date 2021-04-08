@@ -11,6 +11,9 @@
           <el-button type="primary">添加分类</el-button>
         </el-col>
       </el-row>
+
+      <!-- 树形表格 -->
+      <tree-table :data="categories" :columns="columns" :selection-type="false" :expand-type="false" show-index index-text="#" border :show-row-hover="false"></tree-table>
     </my-card>
   </div>
 </template>
@@ -34,6 +37,11 @@ import {requestGoodsCategories} from 'network/goods'
           pagesize: 5  // 每页多少条
         },
         categories: [],  // 商品分类列表
+        total: 0,  // 商品总条数
+        columns: [
+          // 每列显示什么
+          {label: '分类名称', prop: 'cat_name'},
+        ]
       }
     },
     methods: {
@@ -43,9 +51,9 @@ import {requestGoodsCategories} from 'network/goods'
 
         if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
 
-        this.categories = res.data
-
-        console.log(this.categories);
+        this.categories = res.data.result
+        this.total = res.data.total
+        console.log(res);
       }
     },
     created () {
