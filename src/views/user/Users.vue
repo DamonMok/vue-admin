@@ -36,8 +36,8 @@
             <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditUserDialog(scope.row)"></el-button>
             <!-- 删除 -->
             <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteUserDialog(scope.row.id)"></el-button>
-            <!-- 设置 -->
-            <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
+            <!-- 分配角色 -->
+            <el-button type="warning" icon="el-icon-setting" size="mini" @click="setRoleDialog(scope.row)"></el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -68,6 +68,23 @@
         <el-button type="primary" @click="didClickedSubmit">确 定</el-button>
       </span>
     </el-dialog>
+
+    <!-- 分配角色 -->
+    <el-dialog title="提示" :visible.sync="setRoleDialogVisible" width="50%">
+      <div>当前用户: {{ userInfo.username }}</div>
+      <div>当前角色: {{ userInfo.role_name}}</div>
+      <div>
+        <span>分配新角色:</span>
+        <el-select v-model="roleId" placeholder="请选择">
+          <el-option v-for="item in roles" :key="item.id" :label="item.roleName" :value="item.id">
+          </el-option>
+        </el-select>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="cancelSetRole">取 消</el-button>
+        <el-button type="primary" @click="submitSetRole">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -75,28 +92,36 @@
 import NavTitles from "components/content/NavTitles";
 import MyCard from "components/content/MyCard";
 
-import { requestUsers, requestChangeState, requestAddUser, 
-         requestUserById, requestUpdateUserInfo, 
-         requestDeleteUser } from "network/user";
+import {
+  requestUsers,
+  requestChangeState,
+  requestAddUser,
+  requestUserById,
+  requestUpdateUserInfo,
+  requestDeleteUser,
+  requestSetRole,
+} from "network/user";
+
+import { requestRoles } from "network/roles"
 
 export default {
-  data() { 
+  data() {
     // 验证邮箱自定义规则
     var checkEmail = (rule, value, cb) => {
-      const regEmail = /^[A-Za-z0-9._%-]+@([A-Za-z0-9-]+.)+[A-Za-z]{2,4}$/
+      const regEmail = /^[A-Za-z0-9._%-]+@([A-Za-z0-9-]+.)+[A-Za-z]{2,4}$/;
       if (regEmail.test(value)) {
-        return cb()
+        return cb();
       }
-      cb(new Error('请输入合法的邮箱'))
-    }
+      cb(new Error("请输入合法的邮箱"));
+    };
     // 验证手机自定义规则
     var checkMobile = (rule, value, cb) => {
-      const regMobile = /^((13[0-9])|(14[5|7])|(15([0-3]|[5-9]))|(18[0,5-9]))\d{8}$/
+      const regMobile = /^((13[0-9])|(14[5|7])|(15([0-3]|[5-9]))|(18[0,5-9]))\d{8}$/;
       if (regMobile.test(value)) {
-        return cb()
+        return cb();
       }
-      cb(new Error('请输入合法的手机号'))
-    }
+      cb(new Error("请输入合法的手机号"));
+    };
     return {
       queryInfo: {
         query: "", // 查询参数
@@ -106,15 +131,20 @@ export default {
       users: [], // 用户列表数据
       total: 0, // 总页数
       dialogVisible: false, // 显示新增/修改用户对话框
-      isEditDialog: false,  // 是否为编辑对话框
-      validCount: 0,  // 是否完成所有验证
+      isEditDialog: false, // 是否为编辑对话框
+      validCount: 0, // 是否完成所有验证
+
+      userInfo: {}, // 当前被分配角色的用户
+      roles: [],  // 角色列表
+      setRoleDialogVisible: false, // 分配角色对话框显示/隐藏
+      roleId: '', // 已选中的分配角色ID
 
       // 新增用户表单数据
       addForm: {
-        username: '',
-        password: '',
-        email: '',
-        mobile: ''
+        username: "",
+        password: "",
+        email: "",
+        mobile: "",
       },
       // 新增用户表单验证规则
       addFormRules: {
@@ -144,7 +174,7 @@ export default {
           { required: true, message: "请输入手机号", trigger: "blur" },
           { validator: checkMobile, trigger: "blur" },
         ],
-      }
+      },
     };
   },
   components: {
@@ -194,103 +224,135 @@ export default {
 
     // 新增用户对话框
     showAddUserDialog() {
-      this.isEditDialog = false
+      this.isEditDialog = false;
       this.dialogVisible = true;
     },
 
     // 修改用户对话框
     async showEditUserDialog(user) {
-      this.isEditDialog = true
-      this.dialogVisible = true
+      this.isEditDialog = true;
+      this.dialogVisible = true;
 
       // 用户信息查询并渲染
-      const {data: res} = await requestUserById(user)
-      this.addForm.username = res.data.username
-      this.addForm.email = res.data.email
-      this.addForm.mobile = res.data.mobile
-      this.addForm.id = res.data.id
+      const { data: res } = await requestUserById(user);
+      this.addForm.username = res.data.username;
+      this.addForm.email = res.data.email;
+      this.addForm.mobile = res.data.mobile;
+      this.addForm.id = res.data.id;
     },
 
     // 添加新用户
     addUser() {
       this.$refs.addForm.validate(async (valid, objs) => {
-
         // 验证不通过
-        if (!valid) return
+        if (!valid) return;
 
-        const {data: res} = await requestAddUser(this.addForm)
+        const { data: res } = await requestAddUser(this.addForm);
         // 添加失败
-        if (res.meta.status !== 201) return this.$message.error(res.meta.msg)
+        if (res.meta.status !== 201) return this.$message.error(res.meta.msg);
 
         // 成功
-        this.getUsers()
-        this.$message.success(res.meta.msg)
-        this.dialogVisible = false
-      })
+        this.getUsers();
+        this.$message.success(res.meta.msg);
+        this.dialogVisible = false;
+      });
     },
 
     // 修改用户信息
     updateUserInfo() {
-      const validList = ['email', 'mobile']
+      const validList = ["email", "mobile"];
       this.$refs.addForm.validateField(validList, async (errmsg) => {
-        
         // 使用部分表单验证时，会掉函数会调用多次
         // 使用this.validCount记录是否已经全部验证完
-        this.validCount = !errmsg ? this.validCount+1 : 0
+        this.validCount = !errmsg ? this.validCount + 1 : 0;
 
         // 验证不通过
-        if (errmsg || this.validCount !== validList.length) return
-        
-        const {data: res} = await requestUpdateUserInfo(this.addForm)
+        if (errmsg || this.validCount !== validList.length) return;
+
+        const { data: res } = await requestUpdateUserInfo(this.addForm);
 
         // 修改失败
-        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
 
         // 成功
-        this.getUsers()
-        this.$message.success(res.meta.msg)
-        this.dialogVisible = false
-      })
+        this.getUsers();
+        this.$message.success(res.meta.msg);
+        this.dialogVisible = false;
+      });
     },
 
     // 新增/编辑用户确定提交
     didClickedSubmit() {
       if (!this.isEditDialog) {
-        this.addUser()
+        this.addUser();
       } else {
-        this.updateUserInfo()
+        this.updateUserInfo();
       }
     },
 
     // 关闭新增用户对话框
     didClickedClose() {
-      this.dialogVisible = false
-      this.$refs.addForm.resetFields()
+      this.dialogVisible = false;
+      this.$refs.addForm.resetFields();
     },
 
     // 删除用户确认框
     async deleteUserDialog(id) {
-      const confirmStr = await this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).catch(error => error)
-      
-      if (confirmStr == 'confirm') {
+      const confirmStr = await this.$confirm(
+        "此操作将永久删除该用户, 是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      ).catch((error) => error);
+
+      if (confirmStr == "confirm") {
         // 确认删除
-        const {data: res} = await requestDeleteUser(id)
-        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        const { data: res } = await requestDeleteUser(id);
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
 
-        this.queryInfo.pagenum = 1
-        this.getUsers()
-        this.$message.success(res.meta.msg)
-
-      } else if (confirmStr == 'cancel') {
-        this.$message.info("已取消删除") 
-        
+        this.queryInfo.pagenum = 1;
+        this.getUsers();
+        this.$message.success(res.meta.msg);
+      } else if (confirmStr == "cancel") {
+        this.$message.info("已取消删除");
       } else {
-        return
+        return;
       }
+    },
+
+    // 获取角色列表
+    async getRoles() {
+      // 获取角色列表
+      const {data: res} = await requestRoles()
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+      this.roles = res.data
+    },
+
+    // 分配角色对话框
+    setRoleDialog(user) {
+      this.getRoles()
+      this.userInfo = user;
+      this.setRoleDialogVisible = true;
+    },
+
+    // 分配角色确定
+    async submitSetRole() {
+      const {data: res} = await requestSetRole(this.userInfo.id, this.roleId)
+
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+
+      this.getUsers()
+      this.$message.success(res.meta.msg)
+      this.setRoleDialogVisible = false
+    },
+
+    // 分配角色取消
+    cancelSetRole() {
+      this.roleId = ''
+      this.setRoleDialogVisible = false
     }
   },
   created() {

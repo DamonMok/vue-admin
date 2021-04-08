@@ -47,3 +47,11 @@ export function requestDeleteUser(id) {
     url: 'users/' + id
   })
 }
+
+// 分配角色
+export function requestSetRole(userId, rid) {
+  return request('put', {
+    url: `users/${userId}/role`,
+    rid
+  })
+}
