@@ -13,7 +13,13 @@
       </el-row>
 
       <!-- 树形表格 -->
-      <tree-table :data="categories" :columns="columns" :selection-type="false" :expand-type="false" show-index index-text="#" border :show-row-hover="false"></tree-table>
+      <tree-table :data="categories" :columns="columns" :selection-type="false" :expand-type="false" show-index index-text="#" border :show-row-hover="false">
+        <!-- 是否有效模板 -->
+        <template #isOk="scope">
+          <i class="el-icon-error" v-if="scope.row.cat_deleted" style="color: red"></i>
+          <i class="el-icon-success" v-else style="color: lightgreen"></i>
+        </template>
+      </tree-table>
     </my-card>
   </div>
 </template>
@@ -39,8 +45,10 @@ import {requestGoodsCategories} from 'network/goods'
         categories: [],  // 商品分类列表
         total: 0,  // 商品总条数
         columns: [
-          // 每列显示什么
+          // 分类名称列
           {label: '分类名称', prop: 'cat_name'},
+          // 是否有效列
+          {label: '是否有效', type: 'template', template: 'isOk'}
         ]
       }
     },
