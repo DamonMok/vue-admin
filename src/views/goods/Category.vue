@@ -45,7 +45,7 @@
         </el-form-item>
         <!-- 级联选择器 -->
         <el-form-item label="父级分类">
-          <el-cascader v-model="addCategoryValue" :options="addCategories" @change="handleChange" :props="addCategoryProps"></el-cascader>
+          <el-cascader v-model="addCategoryValue" :options="addCategories" @change="handleChange" :props="addCategoryProps" clearable></el-cascader>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -106,6 +106,8 @@ export default {
         label: "cat_name",
         value: "cat_id",
         children: "children",
+        expandTrigger: "hover", // 悬停展开
+        checkStrictly: "true", // 可以选择任意分类
       },
       addCategoryValue: [], // 选中的父级分类
     };
