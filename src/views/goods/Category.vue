@@ -45,7 +45,7 @@
         </el-form-item>
         <!-- 级联选择器 -->
         <el-form-item label="父级分类">
-          <el-cascader v-model="addCategoryValue" :options="addCategories" @change="handleChange" :props="addCategoryProps" clearable></el-cascader>
+          <el-cascader v-model="addCategoryValue" :options="addCategories" @change="handleChange" :props="addCategoryProps" clearable ref="cascader"></el-cascader>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -158,6 +158,8 @@ export default {
         this.addCategories.cat_pid = 0;
         this.addCategories.cat_level = 0;
       }
+      // 选择完毕收起选择框
+      this.$refs.cascader.toggleDropDownVisible();
     },
     // 确认添加分类
     async submitAddCategory() {
