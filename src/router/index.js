@@ -10,6 +10,7 @@ const Users = () => import('views/user/Users')
 const Rights = () => import('views/rights/Rights')
 const Roles = () => import('views/role/Roles')
 const Caterogy = () => import('views/goods/Category')
+const Params = () => import('views/goods/Params')
 
 const routes = [
   // 登录
@@ -25,11 +26,12 @@ const routes = [
     component: Home,
     redirect: '/welcome',
     children: [
-      {path: '/welcome', name: 'Welcome', component: Welcome},
-      {path: '/users', name: 'Users', component: Users},
-      {path: '/rights', name: 'Rights', component: Rights},
-      {path: '/roles', name: 'Roles', component: Roles},
-      {path: '/categories', name: 'Category', component: Caterogy}
+      { path: '/welcome', name: 'Welcome', component: Welcome },
+      { path: '/users', name: 'Users', component: Users },
+      { path: '/rights', name: 'Rights', component: Rights },
+      { path: '/roles', name: 'Roles', component: Roles },
+      { path: '/categories', name: 'Category', component: Caterogy },
+      { path: '/params', name: 'Params', component: Params }
     ]
   },
   {
