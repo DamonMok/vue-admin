@@ -49,7 +49,7 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="addCategoryDialogVisible = false">取 消</el-button>
+        <el-button @click="cancelAddCategory">取 消</el-button>
         <el-button type="primary" @click="submitAddCategory">确 定</el-button>
       </span>
     </el-dialog>
@@ -60,7 +60,7 @@
 import NavTitles from "components/content/NavTitles";
 import MyCard from "components/content/MyCard";
 
-import { requestGoodsCategories } from "network/goods";
+import { requestGoodsCategories, requestAddCategory } from "network/goods";
 
 export default {
   components: {
@@ -160,9 +160,24 @@ export default {
       }
     },
     // 确认添加分类
-    submitAddCategory() {
+    async submitAddCategory() {
       console.log(this.addCategoryValue);
-      // this.addCategoryDialogVisible = false;
+      console.log(this.categoryForm);
+      const { data: res } = await requestAddCategory(this.categoryForm);
+      if (res.meta.status !== 201) return this.$message.error(res.meta.msg);
+
+      this.getCategories();
+      this.$message.success(res.meta.msg);
+      this.addCategoryDialogVisible = false;
+    },
+    // 取消添加分类
+    cancelAddCategory() {
+      this.$refs.categoryForm.resetFields();
+      this.categoryForm.cat_name = "";
+      this.categoryForm.cat_level = 0;
+      this.categoryForm.cat_pid = 0;
+      this.addCategoryValue = [];
+      this.addCategoryDialogVisible = false;
     },
   },
   created() {
