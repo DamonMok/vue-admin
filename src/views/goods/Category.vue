@@ -50,7 +50,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="addCategoryDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addCategoryDialogVisible = false">确 定</el-button>
+        <el-button type="primary" @click="submitAddCategory">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -149,7 +149,20 @@ export default {
     },
     // 添加分类选中分类
     handleChange() {
+      if (this.addCategoryValue.length > 0) {
+        this.addCategories.cat_pid = this.addCategoryValue[
+          this.addCategoryValue.length - 1
+        ];
+        this.addCategories.cat_level = this.addCategoryValue.length;
+      } else {
+        this.addCategories.cat_pid = 0;
+        this.addCategories.cat_level = 0;
+      }
+    },
+    // 确认添加分类
+    submitAddCategory() {
       console.log(this.addCategoryValue);
+      // this.addCategoryDialogVisible = false;
     },
   },
   created() {
