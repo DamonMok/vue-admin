@@ -15,6 +15,13 @@
           <el-cascader v-model="addCategoryValue" :options="addCategories" @change="handleChange" :props="addCategoryProps" clearable ref="cascader"></el-cascader>
         </el-col>
       </el-row>
+
+      <!-- Tabs标签区域 -->
+      <el-tabs v-model="activeName" @tab-click="handleClick">
+        <el-tab-pane label="动态参数" name="dynamic">用户管理</el-tab-pane>
+        <el-tab-pane label="静态属性" name="static">配置管理</el-tab-pane>
+      </el-tabs>
+
     </my-card>
   </div>
 </template>
@@ -42,6 +49,7 @@ export default {
       },
       addCategoryValue: [], // 选中的父级分类
       addCategories: [],
+      activeName: "dynamic", // 当前选择的tab标签页
     };
   },
   methods: {
@@ -57,6 +65,16 @@ export default {
     handleChange() {
       // 选择完毕收起选择框
       this.$refs.cascader.toggleDropDownVisible();
+
+      // 控制只允许选择第三级分类
+      if (this.addCategoryValue.length < 3) {
+        this.addCategoryValue = [];
+        return;
+      }
+    },
+    // 标签页发生改变
+    handleClick() {
+      console.log(this.activeName);
     },
   },
   created() {
