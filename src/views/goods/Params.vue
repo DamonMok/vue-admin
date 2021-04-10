@@ -23,7 +23,14 @@
           <el-button type="primary" :disabled="isDisabled" size="mini" @click="addParams">添加参数</el-button>
           <!-- 动态参数表格 -->
           <el-table :data="manyList" border style="width: 100%">
-            <el-table-column type="expand"></el-table-column>
+            <!-- 添加选项的展开行 -->
+            <el-table-column type="expand">
+              <template #default="scope">
+                <el-input class="input-new-tag input-tag" v-if="inputVisible" v-model="inputValue" ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm(scope.row)" @blur="handleInputConfirm(scope.row)">
+                </el-input>
+                <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>
+              </template>
+            </el-table-column>
             <el-table-column type="index" label="#"></el-table-column>
             <el-table-column prop="attr_name" label="参数名称"></el-table-column>
             <el-table-column label="操作">
@@ -115,6 +122,8 @@ export default {
         },
       },
       operate: "", // 添加或编辑操作
+      inputVisible: false, // 添加选项input的显示/隐藏
+      inputValue: "", // 添加选项input的双向绑定
     };
   },
   methods: {
@@ -153,6 +162,8 @@ export default {
       this.tagName === "many"
         ? (this.manyList = res.data)
         : (this.onlyList = res.data);
+
+      console.log(this.manyList);
     },
 
     // 显示添加/编辑参数|属性对话框
@@ -171,7 +182,6 @@ export default {
 
         if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
         this.addForm = res.data;
-        console.log(this.addForm);
       }
     },
 
@@ -234,6 +244,37 @@ export default {
         this.$message.success(res.meta.msg);
       }
     },
+    // 显示添加选项的输入框时调用
+    showInput() {
+      this.inputVisible = true;
+      this.$nextTick((_) => {
+        this.$refs.saveTagInput.$refs.input.focus();
+      });
+    },
+    // 添加选项文本框失去焦点时调用
+    async handleInputConfirm(row) {
+      // let inputValue = this.inputValue;
+      // if (inputValue) {
+      //   this.dynamicTags.push(inputValue);
+      // }
+      if (!this.inputValue) return;
+
+      // 发送请求
+      const { data: res } = await requestUpdateParams(
+        row.cat_id,
+        row.attr_id,
+        row.attr_name,
+        this.tagName,
+        this.inputValue
+      );
+
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+
+      this.getManyOrOnly();
+
+      this.inputVisible = false;
+      this.inputValue = "";
+    },
   },
   computed: {
     // 添加参数、属性按钮是否可点击
@@ -260,5 +301,9 @@ export default {
 <style lang="less" scoped>
 .el-table {
   margin-top: 15px;
+}
+
+.input-tag {
+  width: 120px !important;
 }
 </style>

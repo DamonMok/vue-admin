@@ -49,12 +49,13 @@ export function requestParamsById(catId, attrId, attr_sel) {
 }
 
 // 编辑提交参数
-export function requestUpdateParams(catId, attrId, attr_name, attr_sel) {
+export function requestUpdateParams(catId, attrId, attr_name, attr_sel, attr_vals) {
   return request('put', {
     url: `categories/${catId}/attributes/${attrId}`,
     data: {
       attr_name,
-      attr_sel
+      attr_sel,
+      attr_vals
     }
   })
 }
