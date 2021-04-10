@@ -18,8 +18,15 @@
 
       <!-- Tabs标签区域 -->
       <el-tabs v-model="activeName" @tab-click="handleClick">
-        <el-tab-pane label="动态参数" name="dynamic">用户管理</el-tab-pane>
-        <el-tab-pane label="静态属性" name="static">配置管理</el-tab-pane>
+        <!-- 动态参数 -->
+        <el-tab-pane label="动态参数" name="dynamic">
+          <el-button type="primary" :disabled="isDisabled">添加参数</el-button>
+        </el-tab-pane>
+
+        <!-- 静态属性 -->
+        <el-tab-pane label="静态属性" name="static">
+          <el-button type="primary" :disabled="isDisabled">添加属性</el-button>
+        </el-tab-pane>
       </el-tabs>
 
     </my-card>
@@ -75,6 +82,12 @@ export default {
     // 标签页发生改变
     handleClick() {
       console.log(this.activeName);
+    },
+  },
+  computed: {
+    // 添加参数、属性按钮是否可点击
+    isDisabled() {
+      return this.addCategoryValue.length !== 3;
     },
   },
   created() {
