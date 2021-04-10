@@ -26,7 +26,7 @@
             <!-- 添加选项的展开行 -->
             <el-table-column type="expand">
               <template #default="scope">
-                <el-tag v-for="(item, index) in scope.row.attr_vals" :key="index">
+                <el-tag v-for="(item, index) in scope.row.attr_vals" :key="index" closable @close="closeTag(scope.row, index)">
                   {{ item }}
                 </el-tag>
                 <el-input class="input-new-tag input-tag" v-if="scope.row.inputVisible" v-model="scope.row.inputValue" ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm(scope.row)" @blur="handleInputConfirm(scope.row)">
@@ -53,7 +53,7 @@
             <!-- 添加选项的展开行 -->
             <el-table-column type="expand">
               <template #default="scope">
-                <el-tag v-for="(item, index) in scope.row.attr_vals" :key="index">
+                <el-tag v-for="(item, index) in scope.row.attr_vals" :key="index" closable @close="closeTag(scope.row, index)">
                   {{ item }}
                 </el-tag>
                 <el-input class="input-new-tag input-tag" v-if="scope.row.inputVisible" v-model="scope.row.inputValue" ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm(scope.row)" @blur="handleInputConfirm(scope.row)">
@@ -262,26 +262,8 @@ export default {
         this.$message.success(res.meta.msg);
       }
     },
-    // 显示添加选项的输入框时调用
-    showInput(row) {
-      row.inputVisible = true;
-      // 文本框自动获得焦点
-      this.$nextTick((_) => {
-        this.$refs.saveTagInput.$refs.input.focus();
-      });
-    },
-    // 添加选项文本框失去焦点时调用
-    async handleInputConfirm(row) {
-      // let inputValue = this.inputValue;
-      // if (inputValue) {
-      //   this.dynamicTags.push(inputValue);
-      // }
-      row.inputVisible = false;
-      if (!row.inputValue) return;
-
-      row.attr_vals.push(row.inputValue);
-      row.inputValue = "";
-
+    // 更新选项请求
+    async updateParams(row) {
       // 发送请求
       const { data: res } = await requestUpdateParams(
         row.cat_id,
@@ -293,12 +275,40 @@ export default {
 
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
 
-      // this.getManyOrOnly();
+      this.$message.success(res.meta.msg);
+    },
+
+    // 显示添加选项的输入框时调用
+    showInput(row) {
+      row.inputVisible = true;
+      // 文本框自动获得焦点
+      this.$nextTick((_) => {
+        this.$refs.saveTagInput.$refs.input.focus();
+      });
+    },
+    // 添加选项文本框失去焦点时调用
+    handleInputConfirm(row) {
+      // let inputValue = this.inputValue;
+      // if (inputValue) {
+      //   this.dynamicTags.push(inputValue);
+      // }
+      row.inputVisible = false;
+      if (!row.inputValue) return;
+
+      row.attr_vals.push(row.inputValue);
+      row.inputValue = "";
+
+      this.updateParams(row);
     },
     // 把动态属性下的选项字符串转换成数组
     getAttrValues(attrValues) {
       if (attrValues.length == 0) return [];
       return attrValues.split(" ");
+    },
+    // 删除选项
+    closeTag(row, index) {
+      row.attr_vals.splice(index, 1);
+      this.updateParams(row);
     },
   },
   computed: {
