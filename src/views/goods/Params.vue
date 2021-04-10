@@ -29,7 +29,7 @@
             <el-table-column label="操作">
               <template #default="scope">
                 <el-button type="primary" icon="el-icon-edit" size="mini" @click="addParams('edit', scope.row.attr_id)">编辑</el-button>
-                <el-button type="danger" icon="el-icon-delete" size="mini">删除</el-button>
+                <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteParams(scope.row.attr_id)">删除</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -46,7 +46,7 @@
             <el-table-column label="操作">
               <template #default="scope">
                 <el-button type="primary" icon="el-icon-edit" size="mini" @click="addParams('edit', scope.row.attr_id)">编辑</el-button>
-                <el-button type="danger" icon="el-icon-delete" size="mini">删除</el-button>
+                <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteParams(scope.row.attr_id)">删除</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -78,6 +78,7 @@ import {
   requestAddParams,
   requestParamsById,
   requestUpdateParams,
+  requestDeleteParams,
 } from "network/goods";
 
 export default {
@@ -154,7 +155,7 @@ export default {
         : (this.onlyList = res.data);
     },
 
-    // 显示添加参数|属性对话框
+    // 显示添加/编辑参数|属性对话框
     async addParams(operate, attr_id) {
       this.operate = operate === "edit" ? "编辑" : "添加";
       this.dialogVisible = true;
@@ -179,7 +180,7 @@ export default {
       this.$refs.addForm.resetFields();
     },
 
-    // 确定添加参数
+    // 确定添加/编辑参数
     submitAddParams() {
       this.$refs.addForm.validate(async (valid) => {
         // 表单验证
@@ -210,6 +211,28 @@ export default {
         this.getManyOrOnly();
         this.dialogVisible = false;
       });
+    },
+
+    // 删除参数
+    async deleteParams(attr_id) {
+      const confirmRes = await this.$confirm(
+        "此操作将永久删除该参数, 是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      ).catch((error) => error);
+
+      if (confirmRes === "confirm") {
+        const { data: res } = await requestDeleteParams(this.catId, attr_id);
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+
+        // 删除成功
+        this.getManyOrOnly();
+        this.$message.success(res.meta.msg);
+      }
     },
   },
   computed: {

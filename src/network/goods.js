@@ -58,3 +58,10 @@ export function requestUpdateParams(catId, attrId, attr_name, attr_sel) {
     }
   })
 }
+
+// 删除参数
+export function requestDeleteParams(catId, attrId) {
+  return request('delete', {
+    url: `categories/${catId}/attributes/${attrId}`
+  })
+}
