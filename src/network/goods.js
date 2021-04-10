@@ -37,3 +37,24 @@ export function requestAddParams(catId, attr_name, attr_sel, attr_vals) {
     }
   })
 }
+
+// 根据 ID 查询参数
+export function requestParamsById(catId, attrId, attr_sel) {
+  return request('get', {
+    url: `categories/${catId}/attributes/${attrId}`,
+    params: {
+      attr_sel
+    }
+  })
+}
+
+// 编辑提交参数
+export function requestUpdateParams(catId, attrId, attr_name, attr_sel) {
+  return request('put', {
+    url: `categories/${catId}/attributes/${attrId}`,
+    data: {
+      attr_name,
+      attr_sel
+    }
+  })
+}

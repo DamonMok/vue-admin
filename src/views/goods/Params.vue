@@ -28,7 +28,7 @@
             <el-table-column prop="attr_name" label="参数名称"></el-table-column>
             <el-table-column label="操作">
               <template #default="scope">
-                <el-button type="primary" icon="el-icon-edit" size="mini">搜索</el-button>
+                <el-button type="primary" icon="el-icon-edit" size="mini" @click="addParams('edit', scope.row.attr_id)">编辑</el-button>
                 <el-button type="danger" icon="el-icon-delete" size="mini">删除</el-button>
               </template>
             </el-table-column>
@@ -45,7 +45,7 @@
             <el-table-column prop="attr_name" label="参数名称"></el-table-column>
             <el-table-column label="操作">
               <template #default="scope">
-                <el-button type="primary" icon="el-icon-edit" size="mini">搜索</el-button>
+                <el-button type="primary" icon="el-icon-edit" size="mini" @click="addParams('edit', scope.row.attr_id)">编辑</el-button>
                 <el-button type="danger" icon="el-icon-delete" size="mini">删除</el-button>
               </template>
             </el-table-column>
@@ -54,7 +54,7 @@
       </el-tabs>
     </my-card>
     <!-- 添加动态参数|静态属性对话框 -->
-    <el-dialog :title="'添加' + paramsTitle" :visible.sync="dialogVisible" width="50%" @close="dialogClose">
+    <el-dialog :title="operate + paramsTitle" :visible.sync="dialogVisible" width="50%" @close="dialogClose">
       <el-form :model="addForm" :rules="rules" ref="addForm" label-width="100px" class="demo-ruleForm">
         <el-form-item :label="paramsTitle" prop="attr_name">
           <el-input v-model="addForm.attr_name"></el-input>
@@ -76,6 +76,8 @@ import {
   requestGoodsCategories,
   requestParams,
   requestAddParams,
+  requestParamsById,
+  requestUpdateParams,
 } from "network/goods";
 
 export default {
@@ -111,6 +113,7 @@ export default {
           trigger: "blur",
         },
       },
+      operate: "", // 添加或编辑操作
     };
   },
   methods: {
@@ -152,8 +155,23 @@ export default {
     },
 
     // 显示添加参数|属性对话框
-    addParams() {
+    async addParams(operate, attr_id) {
+      this.operate = operate === "edit" ? "编辑" : "添加";
       this.dialogVisible = true;
+
+      // 渲染编辑对话框的分类参数
+      if (this.operate === "编辑") {
+        // 获取当前分类参数
+        const { data: res } = await requestParamsById(
+          this.catId,
+          attr_id,
+          this.tagName
+        );
+
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+        this.addForm = res.data;
+        console.log(this.addForm);
+      }
     },
 
     // 对话框关闭
@@ -168,17 +186,28 @@ export default {
         if (!valid) return;
 
         // 发送请求
-        const { data: res } = await requestAddParams(
-          this.catId,
-          this.addForm.attr_name,
-          this.tagName
-        );
+        if (this.operate !== "编辑") {
+          // 添加
+          const { data: res } = await requestAddParams(
+            this.catId,
+            this.addForm.attr_name,
+            this.tagName
+          );
+          if (res.meta.status !== 201) return this.$message.error(res.meta.msg);
+          this.$message.success(res.meta.msg);
+        } else {
+          // 编辑
+          const { data: res } = await requestUpdateParams(
+            this.addForm.cat_id,
+            this.addForm.attr_id,
+            this.addForm.attr_name,
+            this.addForm.attr_sel
+          );
+          if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+          this.$message.success(res.meta.msg);
+        }
 
-        if (res.meta.status !== 201) return this.$message.error(res.meta.msg);
-
-        this.$message.success(res.meta.msg);
         this.getManyOrOnly();
-
         this.dialogVisible = false;
       });
     },
