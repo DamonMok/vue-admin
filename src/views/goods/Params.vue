@@ -26,9 +26,12 @@
             <!-- 添加选项的展开行 -->
             <el-table-column type="expand">
               <template #default="scope">
-                <el-input class="input-new-tag input-tag" v-if="inputVisible" v-model="inputValue" ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm(scope.row)" @blur="handleInputConfirm(scope.row)">
+                <el-tag v-for="(item, index) in scope.row.attr_vals" :key="index">
+                  {{ item }}
+                </el-tag>
+                <el-input class="input-new-tag input-tag" v-if="scope.row.inputVisible" v-model="scope.row.inputValue" ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm(scope.row)" @blur="handleInputConfirm(scope.row)">
                 </el-input>
-                <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>
+                <el-button v-else class="button-new-tag" size="small" @click="showInput(scope.row)">+ New Tag</el-button>
               </template>
             </el-table-column>
             <el-table-column type="index" label="#"></el-table-column>
@@ -47,7 +50,17 @@
           <el-button type="primary" :disabled="isDisabled" size="mini" @click="addParams">添加属性</el-button>
           <!-- 静态属性表格 -->
           <el-table :data="onlyList" border style="width: 100%">
-            <el-table-column type="expand"></el-table-column>
+            <!-- 添加选项的展开行 -->
+            <el-table-column type="expand">
+              <template #default="scope">
+                <el-tag v-for="(item, index) in scope.row.attr_vals" :key="index">
+                  {{ item }}
+                </el-tag>
+                <el-input class="input-new-tag input-tag" v-if="scope.row.inputVisible" v-model="scope.row.inputValue" ref="saveTagInput" size="small" @keyup.enter.native="handleInputConfirm(scope.row)" @blur="handleInputConfirm(scope.row)">
+                </el-input>
+                <el-button v-else class="button-new-tag" size="small" @click="showInput(scope.row)">+ New Tag</el-button>
+              </template>
+            </el-table-column>
             <el-table-column type="index" label="#"></el-table-column>
             <el-table-column prop="attr_name" label="参数名称"></el-table-column>
             <el-table-column label="操作">
@@ -122,8 +135,6 @@ export default {
         },
       },
       operate: "", // 添加或编辑操作
-      inputVisible: false, // 添加选项input的显示/隐藏
-      inputValue: "", // 添加选项input的双向绑定
     };
   },
   methods: {
@@ -158,6 +169,12 @@ export default {
     async getManyOrOnly() {
       const { data: res } = await requestParams(this.catId, this.tagName);
       if (res.meta.status !== 200) this.$message.error(res.meta.msg);
+
+      res.data.forEach((item) => {
+        item.inputVisible = false; // 添加选项input的显示/隐藏
+        item.inputValue = ""; // 添加选项input的双向绑定
+        item.attr_vals = this.getAttrValues(item.attr_vals);
+      });
 
       this.tagName === "many"
         ? (this.manyList = res.data)
@@ -241,12 +258,14 @@ export default {
 
         // 删除成功
         this.getManyOrOnly();
+        this.$message.closeAll();
         this.$message.success(res.meta.msg);
       }
     },
     // 显示添加选项的输入框时调用
-    showInput() {
-      this.inputVisible = true;
+    showInput(row) {
+      row.inputVisible = true;
+      // 文本框自动获得焦点
       this.$nextTick((_) => {
         this.$refs.saveTagInput.$refs.input.focus();
       });
@@ -257,7 +276,11 @@ export default {
       // if (inputValue) {
       //   this.dynamicTags.push(inputValue);
       // }
-      if (!this.inputValue) return;
+      row.inputVisible = false;
+      if (!row.inputValue) return;
+
+      row.attr_vals.push(row.inputValue);
+      row.inputValue = "";
 
       // 发送请求
       const { data: res } = await requestUpdateParams(
@@ -265,15 +288,17 @@ export default {
         row.attr_id,
         row.attr_name,
         this.tagName,
-        this.inputValue
+        row.attr_vals.join(" ")
       );
 
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
 
-      this.getManyOrOnly();
-
-      this.inputVisible = false;
-      this.inputValue = "";
+      // this.getManyOrOnly();
+    },
+    // 把动态属性下的选项字符串转换成数组
+    getAttrValues(attrValues) {
+      if (attrValues.length == 0) return [];
+      return attrValues.split(" ");
     },
   },
   computed: {
@@ -305,5 +330,9 @@ export default {
 
 .input-tag {
   width: 120px !important;
+}
+
+.el-tag {
+  margin: 10px;
 }
 </style>
