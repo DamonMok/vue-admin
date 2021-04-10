@@ -22,7 +22,8 @@
         <el-tab-pane label="动态参数" name="many">
           <el-button type="primary" :disabled="isDisabled" size="mini" @click="addParams">添加参数</el-button>
           <!-- 动态参数表格 -->
-          <el-table :data="manyList" border style="width: 100%" type="expand">
+          <el-table :data="manyList" border style="width: 100%">
+            <el-table-column type="expand"></el-table-column>
             <el-table-column type="index" label="#"></el-table-column>
             <el-table-column prop="attr_name" label="参数名称"></el-table-column>
             <el-table-column label="操作">
@@ -38,7 +39,8 @@
         <el-tab-pane label="静态属性" name="only">
           <el-button type="primary" :disabled="isDisabled" size="mini" @click="addParams">添加属性</el-button>
           <!-- 静态属性表格 -->
-          <el-table :data="onlyList" border style="width: 100%" type="expand">
+          <el-table :data="onlyList" border style="width: 100%">
+            <el-table-column type="expand"></el-table-column>
             <el-table-column type="index" label="#"></el-table-column>
             <el-table-column prop="attr_name" label="参数名称"></el-table-column>
             <el-table-column label="操作">
@@ -60,7 +62,7 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+        <el-button type="primary" @click="submitAddParams">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -70,7 +72,11 @@
 import NavTitles from "components/content/NavTitles";
 import MyCard from "components/content/MyCard";
 
-import { requestGoodsCategories, requestParams } from "network/goods";
+import {
+  requestGoodsCategories,
+  requestParams,
+  requestAddParams,
+} from "network/goods";
 
 export default {
   components: {
@@ -152,8 +158,29 @@ export default {
 
     // 对话框关闭
     dialogClose() {
-      console.log(1);
       this.$refs.addForm.resetFields();
+    },
+
+    // 确定添加参数
+    submitAddParams() {
+      this.$refs.addForm.validate(async (valid) => {
+        // 表单验证
+        if (!valid) return;
+
+        // 发送请求
+        const { data: res } = await requestAddParams(
+          this.catId,
+          this.addForm.attr_name,
+          this.tagName
+        );
+
+        if (res.meta.status !== 201) return this.$message.error(res.meta.msg);
+
+        this.$message.success(res.meta.msg);
+        this.getManyOrOnly();
+
+        this.dialogVisible = false;
+      });
     },
   },
   computed: {
