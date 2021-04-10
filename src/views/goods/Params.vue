@@ -20,7 +20,7 @@
       <el-tabs v-model="tagName" @tab-click="handleClick">
         <!-- 动态参数 -->
         <el-tab-pane label="动态参数" name="many">
-          <el-button type="primary" :disabled="isDisabled" size="mini">添加参数</el-button>
+          <el-button type="primary" :disabled="isDisabled" size="mini" @click="addParams">添加参数</el-button>
           <!-- 动态参数表格 -->
           <el-table :data="manyList" border style="width: 100%" type="expand">
             <el-table-column type="index" label="#"></el-table-column>
@@ -36,7 +36,7 @@
 
         <!-- 静态属性 -->
         <el-tab-pane label="静态属性" name="only">
-          <el-button type="primary" :disabled="isDisabled" size="mini">添加属性</el-button>
+          <el-button type="primary" :disabled="isDisabled" size="mini" @click="addParams">添加属性</el-button>
           <!-- 静态属性表格 -->
           <el-table :data="onlyList" border style="width: 100%" type="expand">
             <el-table-column type="index" label="#"></el-table-column>
@@ -50,8 +50,19 @@
           </el-table>
         </el-tab-pane>
       </el-tabs>
-
     </my-card>
+    <!-- 添加动态参数|静态属性对话框 -->
+    <el-dialog :title="'添加' + paramsTitle" :visible.sync="dialogVisible" width="50%" @close="dialogClose">
+      <el-form :model="addForm" :rules="rules" ref="addForm" label-width="100px" class="demo-ruleForm">
+        <el-form-item :label="paramsTitle" prop="attr_name">
+          <el-input v-model="addForm.attr_name"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -81,6 +92,19 @@ export default {
       tagName: "many", // 当前选择的tab标签页
       manyList: [], // 动态参数list
       onlyList: [], // 静态属性list
+      dialogVisible: false, // 添加参数对话框
+      // 添加表单
+      addForm: {
+        attr_name: "",
+      },
+      // 表单验证
+      rules: {
+        attr_name: {
+          required: true,
+          message: "请输入活动名称",
+          trigger: "blur",
+        },
+      },
     };
   },
   methods: {
@@ -120,6 +144,17 @@ export default {
         ? (this.manyList = res.data)
         : (this.onlyList = res.data);
     },
+
+    // 显示添加参数|属性对话框
+    addParams() {
+      this.dialogVisible = true;
+    },
+
+    // 对话框关闭
+    dialogClose() {
+      console.log(1);
+      this.$refs.addForm.resetFields();
+    },
   },
   computed: {
     // 添加参数、属性按钮是否可点击
@@ -132,6 +167,9 @@ export default {
       return this.addCategoryValue.length === 3
         ? this.addCategoryValue[2]
         : null;
+    },
+    paramsTitle() {
+      return this.tagName === "many" ? "动态参数" : "静态属性";
     },
   },
   created() {
