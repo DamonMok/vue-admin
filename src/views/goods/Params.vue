@@ -17,14 +17,14 @@
       </el-row>
 
       <!-- Tabs标签区域 -->
-      <el-tabs v-model="activeName" @tab-click="handleClick">
+      <el-tabs v-model="tagName" @tab-click="handleClick">
         <!-- 动态参数 -->
-        <el-tab-pane label="动态参数" name="dynamic">
+        <el-tab-pane label="动态参数" name="many">
           <el-button type="primary" :disabled="isDisabled">添加参数</el-button>
         </el-tab-pane>
 
         <!-- 静态属性 -->
-        <el-tab-pane label="静态属性" name="static">
+        <el-tab-pane label="静态属性" name="only">
           <el-button type="primary" :disabled="isDisabled">添加属性</el-button>
         </el-tab-pane>
       </el-tabs>
@@ -37,7 +37,7 @@
 import NavTitles from "components/content/NavTitles";
 import MyCard from "components/content/MyCard";
 
-import { requestGoodsCategories } from "network/goods";
+import { requestGoodsCategories, requestParams } from "network/goods";
 
 export default {
   components: {
@@ -56,7 +56,9 @@ export default {
       },
       addCategoryValue: [], // 选中的父级分类
       addCategories: [],
-      activeName: "dynamic", // 当前选择的tab标签页
+      tagName: "many", // 当前选择的tab标签页
+      manyList: [], // 动态参数list
+      onlyList: [], // 静态属性list
     };
   },
   methods: {
@@ -78,16 +80,36 @@ export default {
         this.addCategoryValue = [];
         return;
       }
+
+      this.getManyOrOnly();
     },
+
     // 标签页发生改变
     handleClick() {
-      console.log(this.activeName);
+      this.getManyOrOnly();
+    },
+
+    // 获取动态参数/静态属性
+    async getManyOrOnly() {
+      const { data: res } = await requestParams(this.catId, this.tagName);
+      if (res.meta.status !== 200) this.$message.error(res.meta.msg);
+
+      this.tagName === "many"
+        ? (this.manyList = res.data)
+        : (this.onlyList = res.data);
     },
   },
   computed: {
     // 添加参数、属性按钮是否可点击
     isDisabled() {
       return this.addCategoryValue.length !== 3;
+    },
+
+    // 获取当前第三级分类Id
+    catId() {
+      return this.addCategoryValue.length === 3
+        ? this.addCategoryValue[2]
+        : null;
     },
   },
   created() {
