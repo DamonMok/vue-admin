@@ -20,12 +20,34 @@
       <el-tabs v-model="tagName" @tab-click="handleClick">
         <!-- 动态参数 -->
         <el-tab-pane label="动态参数" name="many">
-          <el-button type="primary" :disabled="isDisabled">添加参数</el-button>
+          <el-button type="primary" :disabled="isDisabled" size="mini">添加参数</el-button>
+          <!-- 动态参数表格 -->
+          <el-table :data="manyList" border style="width: 100%" type="expand">
+            <el-table-column type="index" label="#"></el-table-column>
+            <el-table-column prop="attr_name" label="参数名称"></el-table-column>
+            <el-table-column label="操作">
+              <template #default="scope">
+                <el-button type="primary" icon="el-icon-edit" size="mini">搜索</el-button>
+                <el-button type="danger" icon="el-icon-delete" size="mini">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
         </el-tab-pane>
 
         <!-- 静态属性 -->
         <el-tab-pane label="静态属性" name="only">
-          <el-button type="primary" :disabled="isDisabled">添加属性</el-button>
+          <el-button type="primary" :disabled="isDisabled" size="mini">添加属性</el-button>
+          <!-- 静态属性表格 -->
+          <el-table :data="onlyList" border style="width: 100%" type="expand">
+            <el-table-column type="index" label="#"></el-table-column>
+            <el-table-column prop="attr_name" label="参数名称"></el-table-column>
+            <el-table-column label="操作">
+              <template #default="scope">
+                <el-button type="primary" icon="el-icon-edit" size="mini">搜索</el-button>
+                <el-button type="danger" icon="el-icon-delete" size="mini">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
         </el-tab-pane>
       </el-tabs>
 
@@ -119,4 +141,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.el-table {
+  margin-top: 15px;
+}
 </style>
