@@ -56,7 +56,12 @@
               <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
             </el-upload>
           </el-tab-pane>
-          <el-tab-pane label="商品内容" name="4">商品内容</el-tab-pane>
+          <el-tab-pane label="商品内容" name="4">
+            <!-- 富文本编辑器 -->
+            <quill-editor v-model="addForm.goods_introduce" />
+            <!-- 添加商品按钮 -->
+            <el-button type="primary" class="addGoodsBtn">添加商品</el-button>
+          </el-tab-pane>
         </el-tabs>
       </el-form>
     </my-card>
@@ -72,10 +77,16 @@ import MyCard from "components/content/MyCard";
 
 import { requestGoodsCategories, requestParams } from "network/goods";
 
+import "quill/dist/quill.core.css";
+import "quill/dist/quill.snow.css";
+import "quill/dist/quill.bubble.css";
+import { quillEditor } from "vue-quill-editor";
+
 export default {
   components: {
     NavTitles,
     MyCard,
+    quillEditor, // 富文本编辑器
   },
   data() {
     return {
@@ -87,6 +98,7 @@ export default {
         goods_number: 0,
         goods_cat: [],
         pics: [],
+        goods_introduce: "", // 商品介绍
       },
       rules: {
         goods_name: [
@@ -232,5 +244,9 @@ export default {
 
 .preview-img {
   width: 100%;
+}
+
+.addGoodsBtn {
+  margin-top: 15px;
 }
 </style>
