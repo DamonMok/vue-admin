@@ -175,7 +175,14 @@ export default {
     // 预览图片
     handlePreview() {},
     // 删除图片
-    handleRemove() {},
+    handleRemove(file, fileList) {
+      const tempPath = file.response.data.tmp_path;
+      const i = this.addForm.pics.findIndex((pic) => {
+        pic.pic === tempPath;
+      });
+      this.addForm.pics.splice(i, 1);
+      console.log(this.addForm.pics);
+    },
     // 图片上传
     uploadSuccess(response, file, fileList) {
       if (response.meta.status !== 200)
@@ -184,7 +191,6 @@ export default {
       // 上传成功
       const pic = { pic: response.data.tmp_path };
       this.addForm.pics.push(pic);
-      console.log(this.addForm.pics);
     },
   },
   created() {
