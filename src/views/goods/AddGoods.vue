@@ -60,6 +60,9 @@
         </el-tabs>
       </el-form>
     </my-card>
+    <el-dialog title="图片预览" :visible.sync="imgDialogVisible" width="50%" @close="closePreview">
+      <img :src="picPreviewUrl" alt="" class="preview-img">
+    </el-dialog>
   </div>
 </template>
 
@@ -113,8 +116,11 @@ export default {
       manyList: [], // 动态参数列表
       onlyList: [], // 静态属性列表
       headers: {
+        // element-ui图片上传未使用axios,需要另外设置token
         Authorization: window.sessionStorage.getItem("token"),
       },
+      imgDialogVisible: false, // 图片预览
+      picPreviewUrl: "", // 图片预览地址
     };
   },
   methods: {
@@ -173,10 +179,17 @@ export default {
       }
     },
     // 预览图片
-    handlePreview() {},
+    handlePreview(file) {
+      this.picPreviewUrl = file.response.data.url;
+      this.imgDialogVisible = true;
+    },
+    // 关闭预览
+    closePreview() {
+      this.picPreviewUrl = "";
+    },
     // 删除图片
     handleRemove(file, fileList) {
-      const tempPath = file.response.data.tmp_path;
+      this.picUrl = file.response.data.url;
       const i = this.addForm.pics.findIndex((pic) => {
         pic.pic === tempPath;
       });
@@ -215,5 +228,9 @@ export default {
 
 .el-checkbox {
   margin: 0 5px 0 0 !important;
+}
+
+.preview-img {
+  width: 100%;
 }
 </style>
