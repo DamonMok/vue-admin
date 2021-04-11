@@ -148,7 +148,7 @@ export default {
       this.total = res.data.total;
     },
     handleChange() {
-      // 选择完毕收起选择框
+      // 选择完毕收起级联选择框
       this.$refs.cascader.toggleDropDownVisible();
 
       // 控制只允许选择第三级分类

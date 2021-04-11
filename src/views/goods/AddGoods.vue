@@ -20,7 +20,7 @@
 
       <!-- Tabs标签页 -->
       <el-form :model="addForm" :rules="rules" ref="addForm" label-width="100px" class="demo-ruleForm" label-position="top">
-        <el-tabs v-model="activeIndex" tab-position="left">
+        <el-tabs v-model="activeIndex" tab-position="left" :before-leave="beforeTabLeave">
           <el-tab-pane label="基本信息" name="0">
             <el-form-item label="商品名称" prop="goods_name">
               <el-input v-model="addForm.goods_name"></el-input>
@@ -35,7 +35,7 @@
               <el-input v-model="addForm.goods_number"></el-input>
             </el-form-item>
             <el-form-item label="商品分类" prop="goods_cat">
-              <el-input v-model="addForm.goods_name"></el-input>
+              <el-cascader v-model="addForm.goods_cat" :options="categories" @change="handleChange" :props="categoryProps" clearable ref="cascader" size="medium"></el-cascader>
             </el-form-item>
           </el-tab-pane>
           <el-tab-pane label="商品参数" name="1">商品参数</el-tab-pane>
@@ -52,6 +52,8 @@
 import NavTitles from "components/content/NavTitles";
 import MyCard from "components/content/MyCard";
 
+import { requestGoodsCategories } from "network/goods";
+
 export default {
   components: {
     NavTitles,
@@ -60,7 +62,13 @@ export default {
   data() {
     return {
       activeIndex: "0",
-      addForm: {},
+      addForm: {
+        goods_name: "",
+        goods_price: 0,
+        goods_weight: 0,
+        goods_number: 0,
+        goods_cat: [],
+      },
       rules: {
         goods_name: [
           { required: true, message: "请输入商品名称", trigger: "blur" },
@@ -78,7 +86,47 @@ export default {
           { required: true, message: "请输入商品分类", trigger: "blur" },
         ],
       },
+      categories: [], // 商品分类
+      categoryProps: {
+        label: "cat_name",
+        value: "cat_id",
+        children: "children",
+        expandTrigger: "hover", // 悬停展开
+        checkStrictly: "true", // 可以选择任意分类
+      },
     };
+  },
+  methods: {
+    // 获取分类列表
+    async getCategories() {
+      const { data: res } = await requestGoodsCategories();
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+
+      this.categories = res.data;
+    },
+    // 选择了分类
+    handleChange() {
+      // 选择完毕收起级联选择框
+      this.$refs.cascader.toggleDropDownVisible();
+
+      // 控制只允许选择第三级分类
+      if (this.addForm.goods_cat.length < 3) {
+        this.addForm.goods_cat = [];
+        return;
+      }
+      console.log(this.addForm.goods_cat);
+    },
+    // 标签页切换钩子
+    beforeTabLeave(activeName, oldActiveName) {
+      if (oldActiveName === "0" && this.addForm.goods_cat.length !== 3) {
+        this.$message.closeAll();
+        this.$message.error("请先选择商品分类");
+        return false;
+      }
+    },
+  },
+  created() {
+    this.getCategories();
   },
 };
 </script>
