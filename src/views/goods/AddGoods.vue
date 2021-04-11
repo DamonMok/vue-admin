@@ -101,6 +101,7 @@ export default {
         goods_cat: [],
         pics: [],
         goods_introduce: "", // 商品介绍
+        attrs: [], // 参数、属性对象数组
       },
       rules: {
         goods_name: [
@@ -225,11 +226,28 @@ export default {
         if (!valid) return this.$message.error("请填写必须的商品信息！");
       });
 
-      // 添加商品
+      // 表单参数处理：
       // 通过深拷贝把goods_cat从数组转成字符串
       const form = _.cloneDeep(this.addForm);
       form.goods_cat = form.goods_cat.join(",");
-      console.log(form.goods_cat);
+
+      // 商品参数
+      this.manyList.forEach((item) => {
+        const newItem = {
+          attr_id: item.attr_id,
+          attr_value: item.attr_vals.join(" "),
+        };
+        form.attrs.push(newItem);
+      });
+      // 商品属性
+      this.onlyList.forEach((item) => {
+        const newItem = {
+          attr_id: item.attr_id,
+          attr_value: item.attr_vals,
+        };
+        form.attrs.push(newItem);
+      });
+      console.log(form);
     },
   },
   created() {
