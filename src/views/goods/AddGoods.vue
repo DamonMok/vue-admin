@@ -51,7 +51,7 @@
             </el-form-item>
           </el-tab-pane>
           <el-tab-pane label="商品图片" name="3">
-            <el-upload class="upload-demo" action="http://timemeetyou.com:8889/api/private/v1/upload" :on-preview="handlePreview" :on-remove="handleRemove" list-type="picture" :headers="headers">
+            <el-upload class="upload-demo" action="http://timemeetyou.com:8889/api/private/v1/upload" :on-preview="handlePreview" :on-remove="handleRemove" list-type="picture" :headers="headers" :on-success="uploadSuccess">
               <el-button size="small" type="primary">点击上传</el-button>
               <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
             </el-upload>
@@ -83,6 +83,7 @@ export default {
         goods_weight: 0,
         goods_number: 0,
         goods_cat: [],
+        pics: [],
       },
       rules: {
         goods_name: [
@@ -175,6 +176,16 @@ export default {
     handlePreview() {},
     // 删除图片
     handleRemove() {},
+    // 图片上传
+    uploadSuccess(response, file, fileList) {
+      if (response.meta.status !== 200)
+        return this.$message.error(response.meta.msg);
+
+      // 上传成功
+      const pic = { pic: response.data.tmp_path };
+      this.addForm.pics.push(pic);
+      console.log(this.addForm.pics);
+    },
   },
   created() {
     this.getCategories();
