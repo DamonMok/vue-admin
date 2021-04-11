@@ -11,6 +11,7 @@ const Rights = () => import('views/rights/Rights')
 const Roles = () => import('views/role/Roles')
 const Caterogy = () => import('views/goods/Category')
 const Params = () => import('views/goods/Params')
+const goodsList = () => import('views/goods/GoodsList')
 
 const routes = [
   // 登录
@@ -31,7 +32,8 @@ const routes = [
       { path: '/rights', name: 'Rights', component: Rights },
       { path: '/roles', name: 'Roles', component: Roles },
       { path: '/categories', name: 'Category', component: Caterogy },
-      { path: '/params', name: 'Params', component: Params }
+      { path: '/params', name: 'Params', component: Params },
+      { path: '/goods', name: 'GoodsList', component: goodsList }
     ]
   },
   {
