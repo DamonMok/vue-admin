@@ -12,6 +12,7 @@ const Roles = () => import('views/role/Roles')
 const Caterogy = () => import('views/goods/Category')
 const Params = () => import('views/goods/Params')
 const goodsList = () => import('views/goods/GoodsList')
+const addGoods = () => import('views/goods/AddGoods')
 
 const routes = [
   // 登录
@@ -33,7 +34,8 @@ const routes = [
       { path: '/roles', name: 'Roles', component: Roles },
       { path: '/categories', name: 'Category', component: Caterogy },
       { path: '/params', name: 'Params', component: Params },
-      { path: '/goods', name: 'GoodsList', component: goodsList }
+      { path: '/goods', name: 'GoodsList', component: goodsList },
+      { path: '/goods/add', name: 'AddGoods', component: addGoods }
     ]
   },
   {

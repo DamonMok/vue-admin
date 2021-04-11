@@ -13,7 +13,7 @@
           </el-input>
         </el-col>
         <el-col :span="4">
-          <el-button type="primary" @click="">添加商品</el-button>
+          <el-button type="primary" @click="addGoods">添加商品</el-button>
         </el-col>
       </el-row>
       <!-- 表格 -->
@@ -63,12 +63,18 @@ export default {
     MyCard,
   },
   methods: {
+    // 获取商品列表
     async getGoods() {
       const { data: res } = await requestGoods(this.queryInfo);
       if (res.meta.status !== 200) return this.$message.error(res.meat.msg);
 
       this.goodsList = res.data.goods;
       this.totalPages = res.data.total;
+    },
+
+    // 添加商品跳转
+    addGoods() {
+      this.$router.push("/goods/add");
     },
   },
   created() {
