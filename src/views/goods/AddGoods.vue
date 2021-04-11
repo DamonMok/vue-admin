@@ -60,7 +60,7 @@
             <!-- 富文本编辑器 -->
             <quill-editor v-model="addForm.goods_introduce" />
             <!-- 添加商品按钮 -->
-            <el-button type="primary" class="addGoodsBtn">添加商品</el-button>
+            <el-button type="primary" class="addGoodsBtn" @click="addGoods">添加商品</el-button>
           </el-tab-pane>
         </el-tabs>
       </el-form>
@@ -81,6 +81,8 @@ import "quill/dist/quill.core.css";
 import "quill/dist/quill.snow.css";
 import "quill/dist/quill.bubble.css";
 import { quillEditor } from "vue-quill-editor";
+
+var _ = require("lodash");
 
 export default {
   components: {
@@ -216,6 +218,18 @@ export default {
       // 上传成功
       const pic = { pic: response.data.tmp_path };
       this.addForm.pics.push(pic);
+    },
+    // 添加商品
+    addGoods() {
+      this.$refs.addForm.validate((valid) => {
+        if (!valid) return this.$message.error("请填写必须的商品信息！");
+      });
+
+      // 添加商品
+      // 通过深拷贝把goods_cat从数组转成字符串
+      const form = _.cloneDeep(this.addForm);
+      form.goods_cat = form.goods_cat.join(",");
+      console.log(form.goods_cat);
     },
   },
   created() {
