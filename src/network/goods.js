@@ -74,3 +74,11 @@ export function requestGoods(params) {
     params
   })
 }
+
+// 添加商品
+export function requestAddGoods(params) {
+  return request('post', {
+    url: "goods",
+    data: params
+  })
+}

@@ -75,7 +75,11 @@
 import NavTitles from "components/content/NavTitles";
 import MyCard from "components/content/MyCard";
 
-import { requestGoodsCategories, requestParams } from "network/goods";
+import {
+  requestGoodsCategories,
+  requestParams,
+  requestAddGoods,
+} from "network/goods";
 
 import "quill/dist/quill.core.css";
 import "quill/dist/quill.snow.css";
@@ -221,7 +225,7 @@ export default {
       this.addForm.pics.push(pic);
     },
     // 添加商品
-    addGoods() {
+    async addGoods() {
       this.$refs.addForm.validate((valid) => {
         if (!valid) return this.$message.error("请填写必须的商品信息！");
       });
@@ -247,7 +251,16 @@ export default {
         };
         form.attrs.push(newItem);
       });
-      console.log(form);
+
+      // 请求接口
+      const { data: res } = await requestAddGoods(form).catch((err) => {
+        console.log(err);
+      });
+      console.log(res);
+      if (res.meta.status !== 201) return this.$message.error(res.meta.msg);
+
+      this.$message.success(res.meta.msg);
+      // this.$router.push("/goods");
     },
   },
   created() {

@@ -52,7 +52,7 @@ export default {
       queryInfo: {
         query: "", // 查询参数
         pagenum: 1, // 当前页码
-        pagesize: 2, // 每页显示条数
+        pagesize: 100, // 每页显示条数
       },
       goodsList: [], // 商品列表
       totalPages: 0, // 商品总页数
