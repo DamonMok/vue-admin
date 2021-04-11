@@ -20,7 +20,7 @@
 
       <!-- Tabs标签页 -->
       <el-form :model="addForm" :rules="rules" ref="addForm" label-width="100px" class="demo-ruleForm" label-position="top">
-        <el-tabs v-model="activeIndex" tab-position="left" :before-leave="beforeTabLeave">
+        <el-tabs v-model="activeIndex" tab-position="left" :before-leave="beforeTabLeave" @tab-click="tabClick">
           <el-tab-pane label="基本信息" name="0">
             <el-form-item label="商品名称" prop="goods_name">
               <el-input v-model="addForm.goods_name"></el-input>
@@ -38,9 +38,20 @@
               <el-cascader v-model="addForm.goods_cat" :options="categories" @change="handleChange" :props="categoryProps" clearable ref="cascader" size="medium"></el-cascader>
             </el-form-item>
           </el-tab-pane>
-          <el-tab-pane label="商品参数" name="1">商品参数</el-tab-pane>
+          <el-tab-pane label="商品参数" name="1">
+            <el-form-item :label="item.attr_name" v-for="item in manyList" :key="item.id">
+              <el-checkbox-group v-model="item.attr_vals">
+                <el-checkbox :label="params" v-for="(params, index) in item.attr_vals" :key="index" border></el-checkbox>
+              </el-checkbox-group>
+            </el-form-item>
+          </el-tab-pane>
           <el-tab-pane label="商品属性" name="2">商品属性</el-tab-pane>
-          <el-tab-pane label="商品图片" name="3">商品图片</el-tab-pane>
+          <el-tab-pane label="商品图片" name="3">
+            <el-upload class="upload-demo" action="http://timemeetyou.com:8889/api/private/v1/upload" :on-preview="handlePreview" :on-remove="handleRemove" list-type="picture" :headers="headers">
+              <el-button size="small" type="primary">点击上传</el-button>
+              <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+            </el-upload>
+          </el-tab-pane>
           <el-tab-pane label="商品内容" name="4">商品内容</el-tab-pane>
         </el-tabs>
       </el-form>
@@ -52,7 +63,7 @@
 import NavTitles from "components/content/NavTitles";
 import MyCard from "components/content/MyCard";
 
-import { requestGoodsCategories } from "network/goods";
+import { requestGoodsCategories, requestParams } from "network/goods";
 
 export default {
   components: {
@@ -94,6 +105,11 @@ export default {
         expandTrigger: "hover", // 悬停展开
         checkStrictly: "true", // 可以选择任意分类
       },
+      manyList: [], // 动态参数列表
+      onlyList: [], // 静态属性列表
+      headers: {
+        Authorization: window.sessionStorage.getItem("token"),
+      },
     };
   },
   methods: {
@@ -114,7 +130,6 @@ export default {
         this.addForm.goods_cat = [];
         return;
       }
-      console.log(this.addForm.goods_cat);
     },
     // 标签页切换钩子
     beforeTabLeave(activeName, oldActiveName) {
@@ -124,9 +139,43 @@ export default {
         return false;
       }
     },
+    // 点击了标签
+    async tabClick() {
+      if (this.activeIndex === "1") {
+        // 商品参数
+        const { data: res } = await requestParams(this.catId, "many");
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+
+        this.manyList = res.data;
+        console.log(this.manyList);
+        // 把属性字符串转成数据
+        this.manyList.forEach((item) => {
+          if (!item.attr_vals) {
+            item.attr_vals = [];
+          } else {
+            item.attr_vals = item.attr_vals.split(" ");
+          }
+        });
+      } else if (this.activeIndex === "3") {
+        // 上传图片
+      }
+    },
+    // 预览图片
+    handlePreview() {},
+    // 删除图片
+    handleRemove() {},
   },
   created() {
     this.getCategories();
+  },
+  computed: {
+    catId() {
+      if (this.addForm.goods_cat.length === 3) {
+        return this.addForm.goods_cat[2];
+      } else {
+        return null;
+      }
+    },
   },
 };
 </script>
@@ -134,5 +183,9 @@ export default {
 <style lang="less" scoped>
 .el-steps {
   margin: 15px 0;
+}
+
+.el-checkbox {
+  margin: 0 5px 0 0 !important;
 }
 </style>
