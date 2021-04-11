@@ -45,7 +45,11 @@
               </el-checkbox-group>
             </el-form-item>
           </el-tab-pane>
-          <el-tab-pane label="商品属性" name="2">商品属性</el-tab-pane>
+          <el-tab-pane label="商品属性" name="2">
+            <el-form-item :label="item.attr_name" v-for="(item, index) in onlyList" :key="index">
+              <el-input v-model="item.attr_vals"></el-input>
+            </el-form-item>
+          </el-tab-pane>
           <el-tab-pane label="商品图片" name="3">
             <el-upload class="upload-demo" action="http://timemeetyou.com:8889/api/private/v1/upload" :on-preview="handlePreview" :on-remove="handleRemove" list-type="picture" :headers="headers">
               <el-button size="small" type="primary">点击上传</el-button>
@@ -156,6 +160,13 @@ export default {
             item.attr_vals = item.attr_vals.split(" ");
           }
         });
+      } else if (this.activeIndex === "2") {
+        // 商品属性
+        // 商品参数
+        const { data: res } = await requestParams(this.catId, "only");
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg);
+
+        this.onlyList = res.data;
       } else if (this.activeIndex === "3") {
         // 上传图片
       }
