@@ -154,6 +154,8 @@ export default {
       // 控制只允许选择第三级分类
       if (this.addCategoryValue.length < 3) {
         this.addCategoryValue = [];
+        this.manyList = [];
+        this.onlyList = [];
         return;
       }
 
