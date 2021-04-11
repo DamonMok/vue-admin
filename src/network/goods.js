@@ -66,3 +66,11 @@ export function requestDeleteParams(catId, attrId) {
     url: `categories/${catId}/attributes/${attrId}`
   })
 }
+
+// 商品列表数据
+export function requestGoods(params) {
+  return request('get', {
+    url: `goods`,
+    params
+  })
+}
