@@ -20,5 +20,10 @@ module.exports = {
     config.when(process.env.NODE_ENV === 'development', config => {
       config.entry('app').clear().add('./src/main-dev.js')
     })
+
+    config.plugin('html').tap(args => {
+      args[0].title = 'Damon电商管理后台'
+      return args
+    })
   }
 }
